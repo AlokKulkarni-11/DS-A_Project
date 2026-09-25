@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Supplier Scorecard</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<!-- File input below is restricted to .csv via `accept`, and script.js re-checks the extension/MIME type on selection since `accept` is only a filter hint, not enforcement. -->
+</head>
+<body>
+<div class="shell">
+  <div class="masthead">
+    <h1>Supplier Scorecard</h1>
+    <span class="tag">cost · reliability · resilience</span>
+  </div>
+  <p class="lede">Upload any supplier or delivery CSV, map its columns, and get a weighted, ranked scorecard with a sensitivity check against a naive price-only baseline.</p>
+  <nav class="rail" id="steps"></nav>
+  <section id="app"></section>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
