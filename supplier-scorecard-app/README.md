@@ -1,19 +1,19 @@
-# Supplier Scorecard App
+# Supplier Scorecard App (Standalone Bundle)
 
-## How to run
-No install needed. Just open `index.html` in any browser (Chrome, Firefox, Edge).
+A self-contained client-side web application that scores and ranks suppliers on **Cost Efficiency**, **Delivery Reliability**, and **Supply Chain Resilience** with interactive charts, FinTech working capital analysis, and a what-if sourcing optimizer.
 
-## How to use
-1. Upload your supplier/delivery CSV (e.g. SCMS_Delivery_History_Dataset_20150929.csv)
-2. Map the columns (vendor, scheduled date, delivered date are required; price, product,
-   freight, and order value are optional and unlock extra metrics)
-3. Review the data-cleaning summary
-4. Set pillar weights (or use a preset) and a minimum-shipments threshold
-5. View the ranked scorecard, sensitivity table, and price-only baseline
-6. Download the ranked results as CSV from the results page
+## How to Run
+No install or web server needed. Just open `index.html` in any modern web browser (Chrome, Firefox, Edge).
 
-## Notes
-- Handles UTF-8 and Windows-1252 (latin-1) encoded CSVs
-- Non-numeric values in numeric columns (e.g. "Freight Included in Commodity Cost")
-  are skipped for that calculation rather than breaking the app
-- Dates like "2-Jun-06", "2006-06-02", and "06/02/2006" are all parsed
+## How to Use
+1. **Upload CSV or Load Sample**: Click `⚡ Load Sample Data` for instant demonstration, or upload any order/shipment CSV.
+2. **Map Columns**: Vendor, promised date, and delivered date are required; unit price, product group, freight cost, and line item value unlock cost metrics.
+3. **Review Cleaned Data**: Check dropped rows and non-numeric value handling.
+4. **Configure Weights**: Set pillar weights via sliders, presets, or Analytic Hierarchy Process (AHP) pairwise comparison.
+5. **Analyze Results**:
+   - Ranked Scorecard Table with supplier drill-down modal.
+   - Interactive visual charts (Figures 5–8 from report).
+   - FinTech Working Capital & Safety Stock carrying cost calculator.
+   - What-If Sourcing Order Allocation optimizer.
+   - Price-only baseline comparison.
+6. **Export**: Download ranked results and sensitivity data as CSV.

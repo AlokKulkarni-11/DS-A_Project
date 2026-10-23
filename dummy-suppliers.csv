@@ -1,0 +1,191 @@
+Order ID,Vendor,Product Group,Scheduled Delivery Date,Delivered to Client Date,Unit Price,Line Item Quantity,Line Item Value,Freight Cost (USD),Shipment Mode
+PO-1126,Pacific Freight & Supply,Pharmaceuticals,29-Nov-2025,29-Nov-2025,28.67,408,11697.36,3215.19,Air
+PO-1144,Orion Logistics Group,Diagnostic Kits,05-Nov-2025,04-Nov-2025,28.02,671,18801.42,1750.31,Air
+PO-1131,Pacific Freight & Supply,Medical Supplies,07-Dec-2025,06-Dec-2025,8.36,151,1262.36,335.33,Express
+PO-1058,Bargain Direct Supplies,Pharmaceuticals,05-Mar-2025,05-Mar-2025,24.83,391,9708.53,1178.75,Truck
+PO-1028,Apex Global Logistics,Medical Supplies,27-Jan-2025,27-Jan-2025,11.3,956,10802.8,793.92,Air
+PO-1051,Bargain Direct Supplies,Diagnostic Kits,07-Dec-2025,12-Dec-2025,15.11,599,9050.89,1066.21,Truck
+PO-1043,Bargain Direct Supplies,Lab Consumables,15-Nov-2025,19-Nov-2025,4.25,1970,8372.5,1064.96,Truck
+PO-1084,Zenith Medical Corp,Medical Supplies,12-Oct-2025,12-Oct-2025,16.2,753,12198.6,852.34,Express
+PO-1076,Bargain Direct Supplies,Medical Supplies,24-May-2025,28-May-2025,6.85,868,5945.8,729.24,Air
+PO-1006,Apex Global Logistics,Diagnostic Kits,24-Jan-2025,24-Jan-2025,27.86,207,5767.02,450.15,Express
+PO-1104,Zenith Medical Corp,Medical Supplies,23-May-2025,23-May-2025,16.3,448,7302.4,511.96,Truck
+PO-1177,Beacon Healthcare Ltd,Diagnostic Kits,26-Apr-2025,24-Apr-2025,23.41,745,17440.45,Freight Included in Commodity Cost,Truck
+PO-1135,Pacific Freight & Supply,Lab Consumables,28-Sep-2025,27-Sep-2025,5.17,1175,6074.75,1654.0,Truck
+PO-1098,Zenith Medical Corp,Lab Consumables,16-Feb-2025,16-Feb-2025,10.47,437,4575.39,314.14,Air
+PO-1136,Pacific Freight & Supply,Pharmaceuticals,12-Nov-2025,12-Nov-2025,29.67,284,8426.28,2138.12,Truck
+PO-1151,Orion Logistics Group,Diagnostic Kits,25-Jan-2025,24-Jan-2025,27.17,87,2363.79,257.43,Truck
+PO-1145,Orion Logistics Group,Diagnostic Kits,13-Oct-2025,13-Oct-2025,27.23,667,18162.41,1790.49,Express
+PO-1050,Bargain Direct Supplies,Medical Supplies,25-Sep-2025,29-Sep-2025,6.83,472,3223.76,421.58,Express
+PO-1074,Bargain Direct Supplies,Medical Supplies,11-Aug-2025,19-Aug-2025,6.64,824,5471.36,614.04,Express
+PO-1002,Apex Global Logistics,Medical Supplies,14-Jan-2025,12-Jan-2025,11.45,328,3755.6,276.56,Express
+PO-1102,Zenith Medical Corp,Lab Consumables,03-Mar-2025,03-Mar-2025,10.43,1220,12724.6,853.64,Truck
+PO-1060,Bargain Direct Supplies,Diagnostic Kits,25-Sep-2025,24-Sep-2025,15.31,361,5526.91,691.56,Truck
+PO-1015,Apex Global Logistics,Medical Supplies,16-Dec-2025,16-Dec-2025,12.17,649,7898.33,665.81,Truck
+PO-1029,Apex Global Logistics,Pharmaceuticals,29-Jul-2025,27-Jul-2025,42.33,492,20826.36,1519.04,Truck
+PO-1184,Beacon Healthcare Ltd,Medical Supplies,26-Oct-2025,25-Oct-2025,10.14,236,2393.04,217.36,Air
+PO-1163,Orion Logistics Group,Diagnostic Kits,14-Feb-2025,13-Feb-2025,27.29,120,3274.8,323.4,Express
+PO-1169,Beacon Healthcare Ltd,Lab Consumables,10-Apr-2025,08-Apr-2025,6.51,517,3365.67,323.78,Express
+PO-1138,Pacific Freight & Supply,Diagnostic Kits,17-Nov-2025,17-Nov-2025,19.1,470,8977.0,2528.92,Express
+PO-1026,Apex Global Logistics,Medical Supplies,02-Feb-2025,01-Feb-2025,12.3,919,11303.7,858.84,Truck
+PO-1081,Zenith Medical Corp,Diagnostic Kits,27-Dec-2025,27-Dec-2025,34.06,337,11478.22,839.03,Express
+PO-1166,Orion Logistics Group,Pharmaceuticals,21-Jun-2025,20-Jun-2025,44.15,229,10110.35,1042.59,Air
+PO-1045,Bargain Direct Supplies,Diagnostic Kits,24-Mar-2025,26-Mar-2025,15.97,471,7521.87,967.36,Truck
+PO-1044,Bargain Direct Supplies,Medical Supplies,03-Apr-2025,09-Apr-2025,7.17,901,6460.17,822.08,Air
+PO-1003,Apex Global Logistics,Medical Supplies,31-Oct-2025,29-Oct-2025,11.54,195,2250.3,Freight Included in Commodity Cost,Air
+PO-1004,Apex Global Logistics,Lab Consumables,24-Apr-2025,23-Apr-2025,7.88,1857,14633.16,1231.25,Truck
+PO-1023,Apex Global Logistics,Medical Supplies,29-Apr-2025,27-Apr-2025,11.67,980,11436.6,917.52,Truck
+PO-1191,Beacon Healthcare Ltd,Diagnostic Kits,18-Aug-2025,17-Aug-2025,24.25,250,6062.5,529.43,Truck
+PO-1077,Zenith Medical Corp,Lab Consumables,17-Jun-2025,17-Jun-2025,10.3,926,9537.8,646.33,Express
+PO-1150,Orion Logistics Group,Lab Consumables,02-Aug-2025,01-Aug-2025,7.94,906,7193.64,688.18,Truck
+PO-1139,Orion Logistics Group,Lab Consumables,21-Feb-2025,20-Feb-2025,8.12,1946,15801.52,1699.52,Air
+PO-1170,Beacon Healthcare Ltd,Medical Supplies,06-Dec-2025,06-Dec-2025,10.73,234,2510.82,210.35,Express
+PO-1172,Beacon Healthcare Ltd,Lab Consumables,01-May-2025,30-Apr-2025,6.99,1856,12973.44,1261.95,Express
+PO-1055,Bargain Direct Supplies,Medical Supplies,02-May-2025,01-May-2025,6.67,925,6169.75,669.95,Truck
+PO-1181,Beacon Healthcare Ltd,Pharmaceuticals,31-May-2025,31-May-2025,37.26,230,8569.8,758.41,Air
+PO-1122,Pacific Freight & Supply,Diagnostic Kits,27-Mar-2025,27-Mar-2025,18.65,382,7124.3,1930.46,Air
+PO-1064,Bargain Direct Supplies,Pharmaceuticals,08-Sep-2025,08-Sep-2025,23.58,298,7026.84,815.59,Truck
+PO-1086,Zenith Medical Corp,Medical Supplies,26-Jul-2025,26-Jul-2025,15.08,255,3845.4,272.56,Air
+PO-1088,Zenith Medical Corp,Lab Consumables,07-Jun-2025,07-Jun-2025,10.46,1448,15146.08,975.25,Express
+PO-1143,Orion Logistics Group,Diagnostic Kits,11-Dec-2025,11-Dec-2025,29.24,761,22251.64,2190.87,Air
+PO-1155,Orion Logistics Group,Lab Consumables,21-Dec-2025,20-Dec-2025,8.28,1094,9058.32,859.33,Express
+PO-1078,Zenith Medical Corp,Diagnostic Kits,13-Oct-2025,13-Oct-2025,34.09,167,5693.03,391.05,Air
+PO-1014,Apex Global Logistics,Pharmaceuticals,16-Dec-2025,14-Dec-2025,42.24,247,10433.28,917.48,Express
+PO-1070,Bargain Direct Supplies,Pharmaceuticals,08-Nov-2025,07-Nov-2025,25.54,448,11441.92,1500.65,Air
+PO-1007,Apex Global Logistics,Diagnostic Kits,24-Oct-2025,22-Oct-2025,27.03,126,3405.78,287.34,Air
+PO-1132,Pacific Freight & Supply,Pharmaceuticals,06-Feb-2025,05-Feb-2025,28.42,350,9947.0,2991.09,Air
+PO-1035,Apex Global Logistics,Lab Consumables,12-Jun-2025,10-Jun-2025,7.57,219,1657.83,145.85,Air
+PO-1108,Pacific Freight & Supply,Lab Consumables,20-Jan-2025,20-Jan-2025,4.99,1981,9885.19,2958.86,Truck
+PO-1187,Beacon Healthcare Ltd,Lab Consumables,11-May-2025,11-May-2025,6.65,591,3930.15,379.33,Express
+PO-1047,Bargain Direct Supplies,Diagnostic Kits,30-Jun-2025,30-Jun-2025,16.14,775,12508.5,1511.89,Air
+PO-1190,Beacon Healthcare Ltd,Lab Consumables,11-Feb-2025,09-Feb-2025,6.66,1317,8771.22,726.67,Truck
+PO-1085,Zenith Medical Corp,Diagnostic Kits,30-Aug-2025,30-Aug-2025,36.63,268,9816.84,653.16,Air
+PO-1012,Apex Global Logistics,Pharmaceuticals,17-May-2025,17-May-2025,42.92,337,14464.04,1214.29,Express
+PO-1099,Zenith Medical Corp,Lab Consumables,01-Aug-2025,01-Aug-2025,10.26,1475,15133.5,1085.92,Air
+PO-1176,Beacon Healthcare Ltd,Pharmaceuticals,20-Aug-2025,18-Aug-2025,36.54,262,9573.48,861.96,Air
+PO-1107,Pacific Freight & Supply,Medical Supplies,13-Jun-2025,13-Jun-2025,8.52,495,4217.4,1249.93,Air
+PO-1178,Beacon Healthcare Ltd,Pharmaceuticals,30-Aug-2025,28-Aug-2025,36.41,90,3276.9,278.15,Express
+PO-1066,Bargain Direct Supplies,Pharmaceuticals,26-Aug-2025,26-Aug-2025,24.32,244,5934.08,705.64,Truck
+PO-1057,Bargain Direct Supplies,Medical Supplies,25-Feb-2025,01-Mar-2025,7.08,280,1982.4,247.21,Express
+PO-1111,Pacific Freight & Supply,Lab Consumables,06-Oct-2025,05-Oct-2025,5.27,680,3583.6,1087.88,Express
+PO-1025,Apex Global Logistics,Medical Supplies,20-Feb-2025,19-Feb-2025,11.77,533,6273.41,538.39,Express
+PO-1079,Zenith Medical Corp,Lab Consumables,28-Nov-2025,28-Nov-2025,9.52,1823,17354.96,1164.85,Air
+PO-1121,Pacific Freight & Supply,Medical Supplies,02-Jun-2025,02-Jun-2025,7.88,279,2198.52,650.86,Truck
+PO-1140,Orion Logistics Group,Lab Consumables,21-Aug-2025,21-Aug-2025,8.26,894,7384.44,723.49,Truck
+PO-1112,Pacific Freight & Supply,Medical Supplies,12-Aug-2025,13-Aug-2025,7.85,554,4348.9,Freight Included in Commodity Cost,Truck
+PO-1059,Bargain Direct Supplies,Lab Consumables,09-Oct-2025,08-Oct-2025,4.56,1723,7856.88,933.41,Express
+PO-1090,Zenith Medical Corp,Lab Consumables,31-May-2025,31-May-2025,9.78,1647,16107.66,1208.63,Air
+PO-1123,Pacific Freight & Supply,Pharmaceuticals,27-Apr-2025,27-Apr-2025,30.14,483,14557.62,3966.71,Air
+PO-1174,Beacon Healthcare Ltd,Pharmaceuticals,10-May-2025,09-May-2025,37.76,497,18766.72,1835.71,Express
+PO-1011,Apex Global Logistics,Pharmaceuticals,19-Oct-2025,18-Oct-2025,43.41,158,6858.78,537.25,Truck
+PO-1153,Orion Logistics Group,Diagnostic Kits,07-Feb-2025,06-Feb-2025,26.65,526,14017.9,1519.87,Express
+PO-1109,Pacific Freight & Supply,Medical Supplies,16-Mar-2025,15-Mar-2025,8.1,176,1425.6,436.63,Express
+PO-1054,Bargain Direct Supplies,Pharmaceuticals,20-Sep-2025,19-Sep-2025,23.72,387,9179.64,1104.96,Truck
+PO-1141,Orion Logistics Group,Lab Consumables,11-Jun-2025,11-Jun-2025,8.15,512,4172.8,415.13,Air
+PO-1063,Bargain Direct Supplies,Medical Supplies,23-Oct-2025,22-Oct-2025,6.74,460,3100.4,363.86,Truck
+PO-1052,Bargain Direct Supplies,Pharmaceuticals,10-Apr-2025,10-Apr-2025,25.36,396,10042.56,1126.54,Truck
+PO-1162,Orion Logistics Group,Lab Consumables,21-Oct-2025,21-Oct-2025,7.98,1439,11483.22,1068.14,Air
+PO-1119,Pacific Freight & Supply,Lab Consumables,28-May-2025,27-May-2025,5.36,1443,7734.48,2043.95,Truck
+PO-1128,Pacific Freight & Supply,Lab Consumables,29-Oct-2025,28-Oct-2025,5.28,1049,5538.72,1654.34,Truck
+PO-1080,Zenith Medical Corp,Diagnostic Kits,07-Dec-2025,07-Dec-2025,35.11,646,22681.06,1564.02,Truck
+PO-1018,Apex Global Logistics,Medical Supplies,04-Nov-2025,02-Nov-2025,12.38,214,2649.32,228.0,Truck
+PO-1160,Orion Logistics Group,Medical Supplies,01-Jul-2025,01-Jul-2025,12.44,572,7115.68,648.51,Air
+PO-1061,Bargain Direct Supplies,Diagnostic Kits,05-Oct-2025,04-Oct-2025,15.22,316,4809.52,537.07,Truck
+PO-1146,Orion Logistics Group,Medical Supplies,09-Nov-2025,11-Nov-2025,12.1,129,1560.9,162.42,Truck
+PO-1154,Orion Logistics Group,Lab Consumables,22-Oct-2025,22-Oct-2025,7.69,792,6090.48,550.68,Express
+PO-1118,Pacific Freight & Supply,Diagnostic Kits,13-Jan-2025,17-Jan-2025,17.3,361,6245.3,1876.36,Air
+PO-1106,Zenith Medical Corp,Lab Consumables,23-Aug-2025,23-Aug-2025,9.74,1628,15856.72,1083.99,Truck
+PO-1005,Apex Global Logistics,Diagnostic Kits,24-May-2025,23-May-2025,25.52,184,4695.68,345.36,Express
+PO-1149,Orion Logistics Group,Medical Supplies,28-Jan-2025,27-Jan-2025,11.98,790,9464.2,935.65,Express
+PO-1142,Orion Logistics Group,Medical Supplies,11-Aug-2025,11-Aug-2025,12.04,931,11209.24,1022.28,Express
+PO-1171,Beacon Healthcare Ltd,Pharmaceuticals,14-Aug-2025,13-Aug-2025,39.09,396,15479.64,1524.01,Express
+PO-1027,Apex Global Logistics,Pharmaceuticals,06-Aug-2025,05-Aug-2025,44.35,177,7849.95,574.66,Express
+PO-1017,Apex Global Logistics,Medical Supplies,18-Nov-2025,18-Nov-2025,12.0,619,7428.0,552.98,Express
+PO-1030,Apex Global Logistics,Diagnostic Kits,22-Aug-2025,22-Aug-2025,27.03,649,17542.47,1399.66,Air
+PO-1067,Bargain Direct Supplies,Diagnostic Kits,05-Aug-2025,04-Aug-2025,14.66,561,8224.26,994.69,Truck
+PO-1048,Bargain Direct Supplies,Diagnostic Kits,03-Apr-2025,03-Apr-2025,14.8,119,1761.2,208.58,Truck
+PO-1152,Orion Logistics Group,Diagnostic Kits,18-Jun-2025,18-Jun-2025,27.09,520,14086.8,1374.93,Express
+PO-1024,Apex Global Logistics,Pharmaceuticals,05-Oct-2025,05-Oct-2025,42.63,345,14707.35,1243.56,Air
+PO-1083,Zenith Medical Corp,Medical Supplies,11-Apr-2025,11-Apr-2025,15.32,283,4335.56,316.12,Air
+PO-1091,Zenith Medical Corp,Diagnostic Kits,18-Nov-2025,18-Nov-2025,33.65,515,17329.75,1146.32,Truck
+PO-1120,Pacific Freight & Supply,Pharmaceuticals,19-Nov-2025,18-Nov-2025,30.09,208,6258.72,1588.89,Air
+PO-1093,Zenith Medical Corp,Lab Consumables,20-Dec-2025,20-Dec-2025,10.0,757,7570.0,529.24,Air
+PO-1022,Apex Global Logistics,Pharmaceuticals,03-Feb-2025,03-Feb-2025,41.6,333,13852.8,1046.21,Express
+PO-1124,Pacific Freight & Supply,Diagnostic Kits,03-Oct-2025,03-Oct-2025,18.65,768,14323.2,3819.73,Express
+PO-1040,Bargain Direct Supplies,Pharmaceuticals,24-Nov-2025,27-Nov-2025,24.61,429,10557.69,1319.04,Air
+PO-1039,Bargain Direct Supplies,Diagnostic Kits,17-Sep-2025,16-Sep-2025,15.61,174,2716.14,347.41,Truck
+PO-1071,Bargain Direct Supplies,Diagnostic Kits,23-Oct-2025,23-Oct-2025,16.08,486,7814.88,881.21,Express
+PO-1189,Beacon Healthcare Ltd,Diagnostic Kits,07-Apr-2025,06-Apr-2025,24.81,456,11313.36,1022.13,Express
+PO-1164,Orion Logistics Group,Pharmaceuticals,07-Jul-2025,07-Jul-2025,44.59,248,11058.32,1070.08,Express
+PO-1092,Zenith Medical Corp,Pharmaceuticals,07-Feb-2025,07-Feb-2025,57.65,354,20408.1,1448.34,Air
+PO-1130,Pacific Freight & Supply,Diagnostic Kits,07-Oct-2025,10-Oct-2025,18.01,142,2557.42,671.65,Truck
+PO-1087,Zenith Medical Corp,Medical Supplies,14-Oct-2025,14-Oct-2025,15.66,894,14000.04,970.3,Express
+PO-1179,Beacon Healthcare Ltd,Lab Consumables,27-Feb-2025,25-Feb-2025,6.54,816,5336.64,455.17,Express
+PO-1110,Pacific Freight & Supply,Lab Consumables,30-Nov-2025,30-Nov-2025,5.29,1945,10289.05,2900.31,Express
+PO-1125,Pacific Freight & Supply,Diagnostic Kits,26-Feb-2025,26-Feb-2025,18.42,105,1934.1,589.55,Express
+PO-1089,Zenith Medical Corp,Pharmaceuticals,17-May-2025,17-May-2025,54.42,172,9360.24,Freight Included in Commodity Cost,Truck
+PO-1183,Beacon Healthcare Ltd,Medical Supplies,23-Nov-2025,22-Nov-2025,10.89,359,3909.51,341.8,Air
+PO-1013,Apex Global Logistics,Lab Consumables,06-Jul-2025,04-Jul-2025,7.6,1243,9446.8,794.41,Air
+PO-1158,Orion Logistics Group,Medical Supplies,02-Apr-2025,04-Apr-2025,12.82,575,7371.5,775.46,Express
+PO-1046,Bargain Direct Supplies,Diagnostic Kits,07-Jun-2025,11-Jun-2025,14.67,308,4518.36,508.93,Air
+PO-1161,Orion Logistics Group,Medical Supplies,12-Nov-2025,12-Nov-2025,12.6,573,7219.8,787.57,Air
+PO-1020,Apex Global Logistics,Pharmaceuticals,08-Mar-2025,08-Mar-2025,41.75,134,5594.5,480.9,Air
+PO-1036,Apex Global Logistics,Pharmaceuticals,18-Sep-2025,17-Sep-2025,44.37,85,3771.45,293.84,Express
+PO-1033,Apex Global Logistics,Lab Consumables,04-Mar-2025,04-Mar-2025,7.66,704,5392.64,391.7,Express
+PO-1053,Bargain Direct Supplies,Medical Supplies,06-Jun-2025,06-Jun-2025,6.93,904,6264.72,775.03,Truck
+PO-1127,Pacific Freight & Supply,Diagnostic Kits,11-Sep-2025,10-Sep-2025,17.54,630,11050.2,3065.37,Express
+PO-1075,Bargain Direct Supplies,Diagnostic Kits,13-Nov-2025,21-Nov-2025,15.3,556,8506.8,1067.98,Air
+PO-1056,Bargain Direct Supplies,Medical Supplies,23-Aug-2025,22-Aug-2025,7.01,835,5853.35,701.61,Express
+PO-1116,Pacific Freight & Supply,Pharmaceuticals,08-Feb-2025,08-Feb-2025,28.66,350,10031.0,3068.22,Truck
+PO-1068,Bargain Direct Supplies,Pharmaceuticals,30-Nov-2025,29-Nov-2025,23.59,436,10285.24,1171.85,Express
+PO-1069,Bargain Direct Supplies,Pharmaceuticals,04-May-2025,03-May-2025,25.86,338,8740.68,1041.55,Truck
+PO-1032,Apex Global Logistics,Pharmaceuticals,31-Jan-2025,01-Feb-2025,41.41,485,20083.85,1637.25,Air
+PO-1101,Zenith Medical Corp,Pharmaceuticals,24-Mar-2025,24-Mar-2025,55.73,332,18502.36,1223.85,Air
+PO-1134,Pacific Freight & Supply,Pharmaceuticals,09-Jan-2025,08-Jan-2025,28.73,351,10084.23,2639.63,Express
+PO-1129,Pacific Freight & Supply,Medical Supplies,21-Dec-2025,21-Dec-2025,8.49,555,4711.95,1413.14,Express
+PO-1049,Bargain Direct Supplies,Lab Consumables,08-Nov-2025,10-Nov-2025,4.58,988,4525.04,509.35,Truck
+PO-1008,Apex Global Logistics,Medical Supplies,15-Jul-2025,15-Jul-2025,11.71,954,11171.34,870.5,Truck
+PO-1031,Apex Global Logistics,Medical Supplies,25-Oct-2025,23-Oct-2025,11.65,865,10077.25,733.65,Express
+PO-1065,Bargain Direct Supplies,Pharmaceuticals,29-Aug-2025,30-Aug-2025,24.98,251,6269.98,776.93,Truck
+PO-1073,Bargain Direct Supplies,Medical Supplies,28-Jun-2025,28-Jun-2025,6.88,170,1169.6,135.9,Truck
+PO-1082,Zenith Medical Corp,Pharmaceuticals,10-Apr-2025,10-Apr-2025,57.51,191,10984.41,842.2,Truck
+PO-1103,Zenith Medical Corp,Lab Consumables,31-Aug-2025,31-Aug-2025,9.69,985,9544.65,681.4,Air
+PO-1168,Beacon Healthcare Ltd,Medical Supplies,28-Nov-2025,28-Nov-2025,10.11,470,4751.7,411.31,Truck
+PO-1137,Pacific Freight & Supply,Lab Consumables,19-Dec-2025,19-Dec-2025,5.41,350,1893.5,511.32,Air
+PO-1037,Bargain Direct Supplies,Diagnostic Kits,11-Nov-2025,12-Nov-2025,15.89,763,12124.07,1396.51,Air
+PO-1148,Orion Logistics Group,Medical Supplies,30-Sep-2025,30-Sep-2025,12.3,564,6937.2,675.69,Express
+PO-1186,Beacon Healthcare Ltd,Diagnostic Kits,15-Apr-2025,13-Apr-2025,23.36,122,2849.92,246.75,Express
+PO-1115,Pacific Freight & Supply,Lab Consumables,24-Nov-2025,24-Nov-2025,4.94,1565,7731.1,2296.6,Express
+PO-1097,Zenith Medical Corp,Pharmaceuticals,19-Jun-2025,19-Jun-2025,57.16,197,11260.52,772.54,Air
+PO-1096,Zenith Medical Corp,Pharmaceuticals,28-Oct-2025,28-Oct-2025,56.08,96,5383.68,369.95,Air
+PO-1117,Pacific Freight & Supply,Diagnostic Kits,13-Apr-2025,17-Apr-2025,17.72,189,3349.08,951.23,Express
+PO-1041,Bargain Direct Supplies,Medical Supplies,21-Dec-2025,22-Dec-2025,6.79,954,6477.66,785.48,Air
+PO-1156,Orion Logistics Group,Medical Supplies,23-Jul-2025,23-Jul-2025,12.29,326,4006.54,374.06,Air
+PO-1185,Beacon Healthcare Ltd,Lab Consumables,24-Dec-2025,22-Dec-2025,6.55,1861,12189.55,1144.46,Air
+PO-1147,Orion Logistics Group,Diagnostic Kits,05-Jan-2025,04-Jan-2025,28.44,659,18741.96,1712.86,Air
+PO-1100,Zenith Medical Corp,Diagnostic Kits,10-Oct-2025,10-Oct-2025,36.33,528,19182.24,Freight Included in Commodity Cost,Express
+PO-1094,Zenith Medical Corp,Lab Consumables,16-Jun-2025,16-Jun-2025,9.73,387,3765.51,272.77,Express
+PO-1182,Beacon Healthcare Ltd,Diagnostic Kits,05-Feb-2025,08-Feb-2025,24.48,599,14663.52,Freight Included in Commodity Cost,Truck
+PO-1167,Beacon Healthcare Ltd,Medical Supplies,09-Jun-2025,09-Jun-2025,10.44,910,9500.4,791.39,Express
+PO-1062,Bargain Direct Supplies,Lab Consumables,20-Jun-2025,20-Jun-2025,4.27,327,1396.29,164.88,Express
+PO-1019,Apex Global Logistics,Pharmaceuticals,31-Jan-2025,31-Jan-2025,40.98,90,3688.2,294.23,Express
+PO-1034,Apex Global Logistics,Diagnostic Kits,15-May-2025,15-May-2025,25.9,401,10385.9,813.55,Truck
+PO-1010,Apex Global Logistics,Pharmaceuticals,18-Dec-2025,16-Dec-2025,44.13,167,7369.71,625.55,Air
+PO-1114,Pacific Freight & Supply,Pharmaceuticals,01-Apr-2025,01-Apr-2025,29.79,367,10932.93,3059.79,Air
+PO-1180,Beacon Healthcare Ltd,Lab Consumables,03-Feb-2025,02-Feb-2025,6.82,1422,9698.04,895.86,Express
+PO-1157,Orion Logistics Group,Pharmaceuticals,29-Jun-2025,28-Jun-2025,43.21,170,7345.7,698.72,Air
+PO-1038,Bargain Direct Supplies,Diagnostic Kits,02-Mar-2025,05-Mar-2025,15.06,358,5391.48,609.53,Express
+PO-1009,Apex Global Logistics,Medical Supplies,09-Nov-2025,09-Nov-2025,11.57,846,9788.22,777.15,Express
+PO-1042,Bargain Direct Supplies,Diagnostic Kits,07-Jul-2025,08-Jul-2025,14.95,446,6667.7,760.04,Express
+PO-1175,Beacon Healthcare Ltd,Medical Supplies,27-May-2025,25-May-2025,10.57,379,4006.03,361.51,Air
+PO-1133,Pacific Freight & Supply,Medical Supplies,23-May-2025,22-May-2025,8.16,233,1901.28,564.14,Air
+PO-1095,Zenith Medical Corp,Medical Supplies,12-Dec-2025,12-Dec-2025,16.03,881,14122.43,982.74,Truck
+PO-1105,Zenith Medical Corp,Diagnostic Kits,29-Oct-2025,29-Oct-2025,34.81,232,8075.92,563.54,Express
+PO-1188,Beacon Healthcare Ltd,Diagnostic Kits,21-May-2025,20-May-2025,24.73,527,13032.71,1230.02,Truck
+PO-1173,Beacon Healthcare Ltd,Lab Consumables,26-Aug-2025,25-Aug-2025,6.82,1229,8381.78,824.71,Express
+PO-1021,Apex Global Logistics,Pharmaceuticals,10-Jun-2025,10-Jun-2025,42.21,382,16124.22,1393.03,Air
+PO-1016,Apex Global Logistics,Lab Consumables,23-Mar-2025,23-Mar-2025,7.77,1993,15485.61,1355.77,Express
+PO-1165,Orion Logistics Group,Diagnostic Kits,04-Feb-2025,04-Feb-2025,27.31,370,10104.7,1081.52,Express
+PO-1072,Bargain Direct Supplies,Pharmaceuticals,23-Feb-2025,23-Feb-2025,25.21,485,12226.85,1556.88,Express
+PO-1113,Pacific Freight & Supply,Medical Supplies,01-Jun-2025,01-Jun-2025,7.92,249,1972.08,542.47,Air
+PO-1159,Orion Logistics Group,Diagnostic Kits,19-Nov-2025,19-Nov-2025,27.91,149,4158.59,426.79,Express
