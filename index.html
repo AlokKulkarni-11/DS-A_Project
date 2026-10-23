@@ -1,28 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="mix">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Supplier Selection Scorecard | FinTech Analytics</title>
+  <title>SupplyRank | FinTech Supplier Intelligence Platform</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 <body>
   <div class="shell">
-    <header class="top-nav">
-      <div class="brand">
-        <div class="brand-icon">⚡</div>
-        <div class="brand-text">
-          <h1>Supplier Selection Scorecard</h1>
-          <p>Multi-Criteria Supplier Evaluation · Cost · Delivery Reliability · Resilience</p>
+    <header class="app-header">
+      <div class="brand-wrapper">
+        <div class="brand-logo">⚡</div>
+        <div class="brand-titles">
+          <h1>SupplyRank <span class="brand-badge">PRO</span></h1>
+          <p>Multi-Criteria Supplier Evaluation · Cost Efficiency · Delivery Reliability · Supply Chain Resilience</p>
         </div>
       </div>
-      <div class="nav-badge">
-        FinTech Data Science & Analytics · 7MD470
+      <div class="header-actions">
+        <div class="badge-tag">
+          FinTech 7MD470
+        </div>
+        <button class="theme-toggle-btn" id="themeToggleBtn" title="Cycle Theme: Mix / Dark / Light">
+          🌓 Theme: <span id="themeNameLabel">Mix</span>
+        </button>
       </div>
     </header>
 
-    <nav class="stepper-rail" id="steps"></nav>
+    <nav class="stepper" id="steps"></nav>
     <main id="app"></main>
   </div>
   <script src="script.js"></script>

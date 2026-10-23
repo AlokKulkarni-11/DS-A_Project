@@ -1,6 +1,6 @@
-# Supplier Selection Scorecard
+# SupplyRank — Multi-Criteria Supplier Selection & Intelligence Platform
 
-A data-driven multi-criteria decision tool that scores and ranks suppliers on **Cost Efficiency**, **Delivery Reliability**, and **Supply Chain Resilience** from historical shipment data.
+A data-driven FinTech decision engine that scores, ranks, and optimizes suppliers on **Cost Efficiency**, **Delivery Reliability**, and **Supply Chain Resilience** from historical shipment data.
 
 **FinTech Data Science and Analytics (7MD470)**  
 **Walchand College of Engineering, Sangli**  

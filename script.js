@@ -8,46 +8,52 @@ const $$ = s => document.querySelectorAll(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = (v, d = 1) => v == null || Number.isNaN(v) ? '—' : Number(v).toFixed(d);
 
-const STEPS = ['Upload', 'Map columns', 'Check data', 'Weights', 'Results'];
+const STEPS = [
+  { label: 'Upload CSV', icon: '📁' },
+  { label: 'Map Columns', icon: '🔗' },
+  { label: 'Data Audit', icon: '🧹' },
+  { label: 'Weights & Criteria', icon: '⚖️' },
+  { label: 'Executive Scorecard', icon: '🏆' }
+];
 
 const ROLES = [
-  {key:'supplier', label:'Supplier / vendor', req:true, re:/vendor|supplier/i, exclude:/inco|term|country|address|contact|site/i,
+  {key:'supplier', label:'Supplier / Vendor', req:true, re:/vendor|supplier/i, exclude:/inco|term|country|address|contact|site/i,
    prefer:['vendor','supplier','vendor name','supplier name'],
-   help:'The company you buy from. Every unique value in this column becomes one supplier on the scorecard.'},
-  {key:'scheduled', label:'Promised delivery date', req:true, re:/scheduled|promised|due date|expected/i, exclude:/sent|recorded|created|invoice/i,
+   help:'The company you buy from. Each unique entry represents one evaluated supplier.'},
+  {key:'scheduled', label:'Promised Delivery Date', req:true, re:/scheduled|promised|due date|expected/i, exclude:/sent|recorded|created|invoice/i,
    prefer:['scheduled delivery date','promised delivery date','due date'],
-   help:'The date the supplier was supposed to deliver. Delay = actual date minus this date.'},
-  {key:'delivered', label:'Actual delivery date', req:true, re:/delivered|actual delivery|received/i, exclude:/recorded|sent|invoice/i,
+   help:'The date the supplier committed to deliver. Delay = Actual minus Promised Date.'},
+  {key:'delivered', label:'Actual Delivery Date', req:true, re:/delivered|actual delivery|received/i, exclude:/recorded|sent|invoice/i,
    prefer:['delivered to client date','actual delivery date','delivered date'],
-   help:'The date the delivery actually arrived. Used for on-time rate and delay.'},
-  {key:'price', label:'Unit price', req:false, re:/unit price/i,
+   help:'The date goods actually arrived at destination. Used for on-time and delay calculations.'},
+  {key:'price', label:'Unit Price', req:false, re:/unit price/i,
    prefer:['unit price'],
-   help:'Optional. Enables the price-index cost metric (price compared to the median for the same product).'},
-  {key:'product', label:'Product group / category', req:false, re:/product group|category|product/i, exclude:/code|id|description/i,
+   help:'Optional. Enables like-for-like price index (benchmarked against product category median).'},
+  {key:'product', label:'Product Group / Category', req:false, re:/product group|category|product/i, exclude:/code|id|description/i,
    prefer:['product group','category','product category'],
-   help:'Optional. Keeps price comparisons fair: a cheap item is not a good deal just because it is a cheap product.'},
-  {key:'freight', label:'Freight (shipping) cost', req:false, re:/freight/i, exclude:/term|mode/i,
+   help:'Optional. Keeps price comparison fair: compares medicines with medicines, test kits with test kits.'},
+  {key:'freight', label:'Freight (Shipping) Cost', req:false, re:/freight/i, exclude:/term|mode/i,
    prefer:['freight cost (usd)','freight cost'],
-   help:'Optional. With line item value, enables the freight-ratio cost metric.'},
-  {key:'value', label:'Line item value (order total)', req:false, re:/line item value|order value|total value/i,
+   help:'Optional. Evaluates shipping overhead as a fraction of order purchase value.'},
+  {key:'value', label:'Line Item Value (Order Total)', req:false, re:/line item value|order value|total value/i,
    prefer:['line item value'],
-   help:'Optional. Total value of the order line. Needed for the freight ratio.'},
+   help:'Optional. Total monetary value of the order line, needed for freight ratio calculation.'},
 ];
 
 const METRICS = [
-  {key:'pidx', pillar:'cost', lower:true, label:'Price index', help:'Average unit price ÷ median price for the same product. Below 1.0 = cheaper than typical.'},
-  {key:'fr', pillar:'cost', lower:true, label:'Freight ratio', help:'Freight cost ÷ order value. Shows how much shipping eats into the price.'},
-  {key:'onTime', pillar:'reliability', lower:false, label:'On-time rate', help:'Share of deliveries that arrived on or before the promised date.'},
-  {key:'avgDelay', pillar:'reliability', lower:true, label:'Avg delay (days)', help:'Average of actual minus promised days. Negative means early.'},
-  {key:'delayStd', pillar:'resilience', lower:true, label:'Delay spread', help:'Standard deviation of delay. Lower = more predictable.'},
-  {key:'monthStd', pillar:'resilience', lower:true, label:'Monthly consistency', help:'Spread of on-time rate across months. Lower = performance holds up over time.'},
+  {key:'pidx', pillar:'cost', lower:true, label:'Price Index', help:'Average unit price ÷ median price for the same product group. Below 1.0 = cheaper than typical.'},
+  {key:'fr', pillar:'cost', lower:true, label:'Freight Ratio', help:'Freight cost ÷ order value. Shows how much shipping eats into purchase price.'},
+  {key:'onTime', pillar:'reliability', lower:false, label:'On-Time Rate', help:'Share of deliveries arriving on or before promised delivery date.'},
+  {key:'avgDelay', pillar:'reliability', lower:true, label:'Average Delay (days)', help:'Mean delay across shipments. Negative values indicate early arrival.'},
+  {key:'delayStd', pillar:'resilience', lower:true, label:'Delay Spread (σ)', help:'Standard deviation of delivery delays. Lower = predictable & consistent.'},
+  {key:'monthStd', pillar:'resilience', lower:true, label:'Monthly Consistency', help:'Standard deviation of monthly on-time rates. Lower = performance holds up across seasons.'},
 ];
 
 const PRESETS = {
-  'Equal': {cost:1, reliability:1, resilience:1},
-  'Cost-first': {cost:3, reliability:1, resilience:1},
-  'Reliability-first': {cost:1, reliability:3, resilience:1},
-  'Resilience-first': {cost:1, reliability:1, resilience:3},
+  'Equal (1:1:1)': {cost:1, reliability:1, resilience:1},
+  'Cost-first (3:1:1)': {cost:3, reliability:1, resilience:1},
+  'Reliability-first (1:3:1)': {cost:1, reliability:3, resilience:1},
+  'Resilience-first (1:1:3)': {cost:1, reliability:1, resilience:3},
 };
 
 const S = {
@@ -56,16 +62,19 @@ const S = {
   headers: [],
   map: {},
   clean: null,
-  weights: {...PRESETS.Equal},
+  weights: {cost: 1, reliability: 1, resilience: 1},
   minShip: 20,
   result: null,
-  // Enhanced features
   activeTab: 'table', // 'table', 'charts', 'fintech', 'optimizer', 'baseline'
-  weightMode: 'sliders', // 'sliders', 'ahp', 'topsis'
+  weightMode: 'sliders', // 'sliders', 'ahp'
   ahp: { cr: 0, cost_rel: 0.5, cost_res: 0.5, rel_res: 1.0 },
   finParams: { demand: 50000, holdingRate: 20, serviceLevel: 95 },
   optParams: { orderVolume: 100000, minReliability: 96, maxShare: 40 },
-  selectedSupplier: null
+  searchQuery: '',
+  sortCol: 'composite',
+  sortAsc: false,
+  selectedSupplier: null,
+  currentDatasetName: ''
 };
 
 // ---------- Math & Parsing Helpers ----------
@@ -254,7 +263,7 @@ function computeTOPSIS(list, weights) {
   return topsisScores;
 }
 
-// ---------- FinTech Risk & Safety Stock Model ----------
+// ---------- FinTech Safety Stock Risk Model (Chapter 9) ----------
 function computeFintechRisk(scored) {
   const p = S.finParams;
   const dailyDemand = p.demand / 365.0;
@@ -294,7 +303,6 @@ function solveOrderAllocation(scored) {
     cost: s.pidx ?? 1.0,
     composite: s.composite
   }));
-  // Fractional greedy LP allocation
   pool.sort((a, b) => a.cost - b.cost);
   let rem = total;
   const alloc = pool.map(s => {
@@ -302,7 +310,6 @@ function solveOrderAllocation(scored) {
     rem -= take;
     return {...s, units: take};
   });
-  // Check reliability constraint
   let curRel = sum(alloc.map(a => a.units * a.onTime)) / total;
   if (curRel < targetRel) {
     alloc.sort((a, b) => b.onTime - a.onTime);
@@ -333,6 +340,7 @@ function runAll() {
     currentWeights = computeAHPWeights();
   }
   const scored = scoreAll(out, currentWeights);
+  scored.forEach((s, idx) => s.rank = idx + 1);
   const topsisScores = computeTOPSIS(out, currentWeights);
   scored.forEach(s => {
     if (topsisScores[s.name] != null) s.topsisScore = topsisScores[s.name];
@@ -359,10 +367,17 @@ function runAll() {
 
 // ---------- UI Rendering ----------
 function renderSteps() {
-  $('#steps').innerHTML = STEPS.map((label, i) => {
+  $('#steps').innerHTML = STEPS.map((s, i) => {
     const n = i + 1;
     const disabled = (n > 1 && !S.rows.length) || (n > 2 && !S.map.supplier) || (n > 4 && !S.clean) ? 'disabled' : '';
-    return `<button class="${S.step === n ? 'on' : ''}" ${disabled} onclick="goto(${n})"><span class="n">0${n}</span>${label}</button>`;
+    const isActive = S.step === n;
+    const isCompleted = S.step > n;
+    return `
+      <button class="step-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" ${disabled} onclick="goto(${n})">
+        <span class="step-counter">${isCompleted ? '✓ ' : s.icon + ' '}STEP 0${n}</span>
+        <span class="step-name">${s.label}</span>
+      </button>
+    `;
   }).join('');
 }
 
@@ -378,45 +393,128 @@ function render() {
 }
 
 function viewUpload() {
-  return `
-    <div class="panel">
-      <h2>Upload your CSV</h2>
-      <p class="small">One row per order, shipment, or delivery. Each row needs at least a supplier name and two dates.</p>
-      <input type="file" id="file" accept=".csv,text/csv">
-      <div style="margin-top: 14px;">
-        <button class="demo-btn" id="loadSampleBtn">
-          ⚡ Load Sample Data (USAID SCMS Delivery History — 10,324 rows)
-        </button>
+  let previewTable = '';
+  if (S.rows.length) {
+    const headers = S.headers.slice(0, 7);
+    const sampleRows = S.rows.slice(0, 3);
+    previewTable = `
+      <div style="margin-top:20px">
+        <div style="font-weight:700;font-size:13px;color:var(--text-muted);margin-bottom:6px">Data Ingestion Preview (First 3 Rows):</div>
+        <div class="table-responsive"><table>
+          <thead><tr>${headers.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>
+          <tbody>${sampleRows.map(r => `<tr>${headers.map(h => `<td>${esc(r[h] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table></div>
       </div>
-      ${S.rows.length ? `<p class="ok" style="margin-top:12px;margin-bottom:0">✓ Loaded ${S.rows.length.toLocaleString()} rows across ${S.headers.length} columns.</p>` : ''}
+    `;
+  }
+
+  return `
+    <div class="card">
+      <div class="card-header-bar">
+        <div>
+          <h2 class="card-headline">Upload Historical Shipment Data</h2>
+          <p class="card-subtext">Upload any purchase order, shipment, or ERP delivery CSV. Our multi-criteria model automatically evaluates suppliers on Cost Efficiency, Delivery Reliability, and Supply Chain Resilience.</p>
+        </div>
+      </div>
+
+      <div class="dropzone-area" id="dropzoneBox">
+        <span class="dropzone-glyph">📤</span>
+        <div class="dropzone-title">Click to select a CSV file or drag & drop here</div>
+        <div class="dropzone-hint">Supports CSV files with UTF-8 or Windows-1252 encodings, commas, or semicolons</div>
+        <input type="file" id="file" accept=".csv,text/csv" style="display:none">
+      </div>
+
       <div id="loadErr"></div>
+
+      ${S.rows.length ? `
+        <div class="callout-box">
+          <b>✓ Dataset Loaded: ${esc(S.currentDatasetName || 'Active File')}</b>
+          ${S.rows.length.toLocaleString()} total rows across ${S.headers.length} columns detected.
+        </div>
+        ${previewTable}
+        <div class="btn-cluster">
+          <button class="btn btn-primary" onclick="goto(2)">Proceed to Column Mapping →</button>
+        </div>
+      ` : ''}
+
+      <div style="margin-top: 28px;">
+        <div style="font-weight:700;font-size:14px;color:var(--text-sub);margin-bottom:12px">Or start immediately with benchmark test datasets:</div>
+        <div class="dataset-picker-grid">
+          <div class="dataset-card">
+            <div>
+              <div class="dataset-card-top">
+                <span class="dataset-card-name">Benchmark USAID Dataset</span>
+                <span class="badge-tag" style="background:var(--teal-50);color:var(--teal-600)">10,324 Records</span>
+              </div>
+              <p class="dataset-card-desc">The official SCMS global health delivery dataset from the report. Includes 73 vendors, freight costs, and 10 years of delivery history.</p>
+            </div>
+            <button class="btn btn-primary" id="loadBenchmarkBtn">⚡ Load Benchmark Dataset (10.3k rows)</button>
+          </div>
+
+          <div class="dataset-card">
+            <div>
+              <div class="dataset-card-top">
+                <span class="dataset-card-name">Quick Test Dummy CSV</span>
+                <span class="badge-tag" style="background:var(--indigo-50);color:var(--indigo-600)">190 Records</span>
+              </div>
+              <p class="dataset-card-desc">A clean, compact multi-category dataset with 6 distinct supplier archetypes (Ultra-Reliable, Cheap-but-Late, High-Freight, Balanced).</p>
+            </div>
+            <button class="btn btn-secondary" id="loadDummyBtn">🧪 Load Quick Test Dummy (190 rows)</button>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="note"><b>Quick Evaluation</b>You can click "Load Sample Data" above to instantly test the system with the USAID HIV medicines dataset without needing to locate the CSV file.</div>`;
+
+    <div class="callout-box">
+      <b>Why this model matters:</b>
+      Sorting suppliers strictly by lowest price creates a false economy. A vendor that is 5% cheaper but frequently late causes factory downtime, rush shipping, and costly inventory safety stock. This tool reveals the true risk-adjusted performance.
+    </div>
+  `;
 }
 
 function viewMap() {
   const rows = ROLES.map(r => {
     const usedElsewhere = new Set(Object.entries(S.map).filter(([k]) => k !== r.key).map(([, v]) => v));
     const opts = S.headers.filter(h => !usedElsewhere.has(h) || S.map[r.key] === h);
+    const isDetected = S.map[r.key] ? true : false;
     return `
-    <div class="field">
-      <label>${r.label}${r.req ? ' <span class="req">*</span>' : ''}</label>
-      <select data-role="${r.key}">
-        <option value="">— none —</option>
-        ${opts.map(h => `<option value="${esc(h)}" ${S.map[r.key] === h ? 'selected' : ''}>${esc(h)}</option>`).join('')}
-      </select>
-      <div class="fhelp">${r.help}</div>
+    <div class="mapping-item">
+      <div class="mapping-title">
+        ${r.label}${r.req ? '<span class="req-mark">*</span>' : ''}
+        ${isDetected ? '<span class="badge-tag" style="padding:2px 8px;font-size:11px;background:var(--teal-50);color:var(--teal-600)">Auto-matched</span>' : ''}
+      </div>
+      <div>
+        <select class="mapping-select" data-role="${r.key}">
+          <option value="">— not mapped —</option>
+          ${opts.map(h => `<option value="${esc(h)}" ${S.map[r.key] === h ? 'selected' : ''}>${esc(h)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="mapping-subhint">${r.help}</div>
     </div>`;
   }).join('');
   const missing = ROLES.filter(r => r.req && !S.map[r.key]).map(r => r.label);
+
   return `
-    <div class="panel">
-      <h2>Map your columns</h2>
-      <p class="small">Each column can only be assigned to one role — once picked here it drops out of the other dropdowns. We guessed the matches from column names; change any that are wrong.</p>
-      ${rows}
-      ${missing.length ? `<p class="err">Required but not set: ${missing.join(', ')}</p>` : ''}
-      <button class="btn" id="mapNext" ${missing.length ? 'disabled' : ''}>Check data →</button>
-    </div>`;
+    <div class="card">
+      <div class="card-header-bar">
+        <div>
+          <h2 class="card-headline">Verify & Match Dataset Columns</h2>
+          <p class="card-subtext">The auto-mapper has matched known column headers. Confirm mappings below or adjust dropdowns as needed.</p>
+        </div>
+      </div>
+
+      <div class="mapping-list">
+        ${rows}
+      </div>
+
+      ${missing.length ? `<div class="callout-box warn"><b>Required Columns Missing:</b> Please map the following required fields to proceed: ${missing.join(', ')}</div>` : ''}
+
+      <div class="btn-cluster">
+        <button class="btn btn-primary" id="mapNext" ${missing.length ? 'disabled' : ''}>Audit Cleaned Data →</button>
+        <button class="btn btn-secondary" onclick="goto(1)">← Back to Upload</button>
+      </div>
+    </div>
+  `;
 }
 
 function viewClean() {
@@ -428,94 +526,154 @@ function viewClean() {
   const eligible = Object.values(counts).filter(n => n >= S.minShip).length;
   const dropped = c.total - c.rows.length;
   const textIssues = [
-    S.map.price && c.badPrice ? `${c.badPrice} unit price values are not numbers (skipped for price index)` : null,
-    S.map.freight && c.badFreight ? `${c.badFreight} freight values are not numbers (skipped for freight ratio)` : null,
-    S.map.value && c.badValue ? `${c.badValue} line value entries are not numbers` : null,
+    S.map.price && c.badPrice ? `${c.badPrice.toLocaleString()} unit prices are text/empty (treated safely as missing for price index)` : null,
+    S.map.freight && c.badFreight ? `${c.badFreight.toLocaleString()} freight entries contain text like 'Freight Included' (treated as missing rather than zero)` : null,
+    S.map.value && c.badValue ? `${c.badValue.toLocaleString()} line value entries are non-numeric` : null,
   ].filter(Boolean);
+
   return `
-    <div class="panel">
-      <h2>Check the cleaned data</h2>
-      <div class="stats">
-        <div><b>${c.total.toLocaleString()}</b><span class="lbl">rows in file</span></div>
-        <div><b>${c.rows.length.toLocaleString()}</b><span class="lbl">usable rows</span></div>
-        <div><b>${nSup}</b><span class="lbl">suppliers found</span></div>
-        <div><b>${eligible}</b><span class="lbl">meet ${S.minShip}-shipment minimum</span></div>
+    <div class="card">
+      <div class="card-header-bar">
+        <div>
+          <h2 class="card-headline">Data Quality & Cleaning Audit</h2>
+          <p class="card-subtext">Automated cleaning pipeline has standardized date formats, coerced numbers, and isolated valid suppliers.</p>
+        </div>
       </div>
-      ${dropped ? `<p class="warn">${dropped} rows dropped: ${c.drop.supplier} missing a supplier, ${c.drop.date} with unreadable dates.</p>` : '<p class="ok">✓ No rows dropped.</p>'}
-      ${textIssues.map(t => `<p class="warn">${t}.</p>`).join('')}
-      <p class="small">Numbers with commas or $ signs are read correctly. Non-numeric text is left blank instead of breaking the calculation.</p>
-      <button class="btn" onclick="goto(4)">Set weights →</button>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-num">${c.total.toLocaleString()}</div>
+          <div class="kpi-caption">Raw Orders in File</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-num" style="color:var(--emerald-600)">${c.rows.length.toLocaleString()}</div>
+          <div class="kpi-caption">Valid Clean Shipments</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-num">${nSup}</div>
+          <div class="kpi-caption">Unique Suppliers Found</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-num" style="color:var(--teal-600)">${eligible}</div>
+          <div class="kpi-caption">Qualified (≥${S.minShip} orders)</div>
+        </div>
+      </div>
+
+      <div style="margin: 20px 0;">
+        ${dropped ? `<div class="callout-box warn"><b>Row Filter Notice:</b> ${dropped} rows dropped due to missing vendor name (${c.drop.supplier}) or unreadable delivery dates (${c.drop.date}).</div>` : '<div class="callout-box"><b>✓ 100% Parsing Pass:</b> All records have valid supplier names and readable delivery dates.</div>'}
+        ${textIssues.map(t => `<div style="font-size:13px;color:var(--text-muted);margin:6px 0">ℹ️ ${t}.</div>`).join('')}
+      </div>
+
+      <div class="btn-cluster">
+        <button class="btn btn-primary" onclick="goto(4)">Configure Weights & Criteria →</button>
+        <button class="btn btn-secondary" onclick="goto(2)">← Edit Column Mapping</button>
+      </div>
     </div>
-    <div class="note"><b>Why a minimum shipment count?</b>Suppliers with very few shipments get noisy scores — one late delivery can swing their rate a lot. Suppliers below the minimum sit out of the ranking. Change the minimum on the next step.</div>`;
+  `;
 }
 
 function viewWeights() {
-  const labels = {cost:'Cost efficiency', reliability:'Delivery reliability', resilience:'Resilience'};
+  const labels = {cost:'Cost Efficiency', reliability:'Delivery Reliability', resilience:'Supply Chain Resilience'};
   const helps = {
-    cost: 'How cheap the supplier is relative to similar items, plus freight overhead.',
-    reliability: 'How often the supplier delivers on the promised date, and how late it is on average.',
-    resilience: 'How steady the supplier is: delay spread and consistency across months.',
+    cost: 'Unit price compared to product category median, plus freight shipping overhead ratio.',
+    reliability: 'On-time delivery percentage (OTIF) and average delivery delay in days.',
+    resilience: 'Predictability (low delay spread σ) and month-to-month delivery consistency.',
   };
-  const pillarAvail = p => METRICS.some(m => m.pillar === p && ((p === 'cost' && (S.map.price || (S.map.freight && S.map.value))) || (p !== 'cost')));
+
+  const totalW = (S.weights.cost + S.weights.reliability + S.weights.resilience) || 1;
+  const pct = p => Math.round((S.weights[p] / totalW) * 100);
 
   let modeContent = '';
   if (S.weightMode === 'sliders') {
     modeContent = `
-      <div class="presets">
-        ${Object.keys(PRESETS).map(n => `<button class="btn" onclick="preset('${n}')">${n}</button>`).join('')}
-      </div>
-      ${['cost','reliability','resilience'].map(p => `
-        <div class="weightrow">
-          <span class="wname">${labels[p]}${pillarAvail(p) ? '' : ' <span class="small">(no data)</span>'}</span>
-          <input type="range" min="0" max="5" step="1" value="${S.weights[p]}" data-w="${p}">
-          <span class="wval">${S.weights[p]}</span>
+      <div style="margin: 14px 0 20px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:8px">Quick Strategic Presets:</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${Object.keys(PRESETS).map(n => `<button class="btn btn-secondary" onclick="preset('${n}')">${n}</button>`).join('')}
         </div>
-        <div class="wsub">${helps[p]}</div>`).join('')}
+      </div>
+
+      <div class="slider-group">
+        ${['cost','reliability','resilience'].map(p => `
+          <div class="slider-row">
+            <div>
+              <div class="slider-title">${labels[p]}</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${helps[p]}</div>
+            </div>
+            <input type="range" min="0" max="5" step="1" value="${S.weights[p]}" data-w="${p}">
+            <div class="slider-val-box">${S.weights[p]}x <span style="font-size:11px;color:var(--text-muted)">(${pct(p)}%)</span></div>
+          </div>
+        `).join('')}
+      </div>
     `;
   } else if (S.weightMode === 'ahp') {
     const ahpW = computeAHPWeights();
     const crOk = S.ahp.cr < 0.10;
     modeContent = `
-      <div class="ahp-slider-box">
-        <p style="margin:0 0 8px;font-size:13.5px"><b>Analytic Hierarchy Process (AHP) Pairwise Comparison</b><br><span class="small">Compare criteria importance on a relative scale (Saaty 1980).</span></p>
-        <div class="ahp-comp-row">
-          <span class="ahp-label-left">Cost</span>
-          <input type="range" min="0.2" max="5.0" step="0.1" value="${S.ahp.cost_rel}" id="ahp_c_r">
-          <span class="ahp-label-right">Reliability (ratio: ${fmt(S.ahp.cost_rel, 2)})</span>
+      <div style="background:var(--bg-subtle);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:20px;margin:16px 0">
+        <h4 style="margin:0 0 4px">Analytic Hierarchy Process (Saaty, 1980)</h4>
+        <p style="margin:0 0 18px;font-size:13px;color:var(--text-muted)">Derives mathematical weights from pairwise comparison ratios via principal eigenvector matrix decomposition.</p>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:grid;grid-template-columns:150px 1fr 180px;gap:14px;align-items:center;font-size:13px">
+            <span style="text-align:right;font-weight:700">Cost Efficiency</span>
+            <input type="range" min="0.2" max="5.0" step="0.1" value="${S.ahp.cost_rel}" id="ahp_c_r">
+            <span>Reliability (Ratio: <b>${fmt(S.ahp.cost_rel, 2)}</b>)</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:150px 1fr 180px;gap:14px;align-items:center;font-size:13px">
+            <span style="text-align:right;font-weight:700">Cost Efficiency</span>
+            <input type="range" min="0.2" max="5.0" step="0.1" value="${S.ahp.cost_res}" id="ahp_c_s">
+            <span>Resilience (Ratio: <b>${fmt(S.ahp.cost_res, 2)}</b>)</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:150px 1fr 180px;gap:14px;align-items:center;font-size:13px">
+            <span style="text-align:right;font-weight:700">Reliability</span>
+            <input type="range" min="0.2" max="5.0" step="0.1" value="${S.ahp.rel_res}" id="ahp_r_s">
+            <span>Resilience (Ratio: <b>${fmt(S.ahp.rel_res, 2)}</b>)</span>
+          </div>
         </div>
-        <div class="ahp-comp-row">
-          <span class="ahp-label-left">Cost</span>
-          <input type="range" min="0.2" max="5.0" step="0.1" value="${S.ahp.cost_res}" id="ahp_c_s">
-          <span class="ahp-label-right">Resilience (ratio: ${fmt(S.ahp.cost_res, 2)})</span>
-        </div>
-        <div class="ahp-comp-row">
-          <span class="ahp-label-left">Reliability</span>
-          <input type="range" min="0.2" max="5.0" step="0.1" value="${S.ahp.rel_res}" id="ahp_r_s">
-          <span class="ahp-label-right">Resilience (ratio: ${fmt(S.ahp.rel_res, 2)})</span>
-        </div>
-        <div style="margin-top:12px;font-size:13px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-          <span>Derived Weights: <b>Cost:</b> ${fmt(ahpW.cost*100, 1)}%, <b>Reliability:</b> ${fmt(ahpW.reliability*100, 1)}%, <b>Resilience:</b> ${fmt(ahpW.resilience*100, 1)}%</span>
-          <span class="pill ${crOk ? 'ok' : 'warn'}">Consistency Ratio (CR): ${fmt(S.ahp.cr, 3)} ${crOk ? '✓ (Consistent)' : '⚠ (Check judgements)'}</span>
+
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div style="font-size:13.5px">
+            Derived Weights: <b>Cost:</b> ${fmt(ahpW.cost*100, 1)}% | <b>Reliability:</b> ${fmt(ahpW.reliability*100, 1)}% | <b>Resilience:</b> ${fmt(ahpW.resilience*100, 1)}%
+          </div>
+          <span class="badge-tag" style="background:${crOk ? 'var(--emerald-50)' : 'var(--amber-50)'};color:${crOk ? 'var(--emerald-600)' : 'var(--amber-600)'}">
+            Consistency Ratio (CR): ${fmt(S.ahp.cr, 3)} ${crOk ? '✓ (Consistent)' : '⚠ (Check judgments)'}
+          </span>
         </div>
       </div>
     `;
   }
 
   return `
-    <div class="panel">
-      <h2>Weighting & Filtering Configuration</h2>
-      <div class="tab-strip" style="margin-top:8px">
-        <button class="tab-pill ${S.weightMode==='sliders'?'active':''}" onclick="setWeightMode('sliders')">Weight Sliders & Presets</button>
-        <button class="tab-pill ${S.weightMode==='ahp'?'active':''}" onclick="setWeightMode('ahp')">AHP Pairwise Comparison</button>
+    <div class="card">
+      <div class="card-header-bar">
+        <div>
+          <h2 class="card-headline">Configure Sourcing Pillars & Methodology</h2>
+          <p class="card-subtext">Choose your multi-criteria weighting method. Sliders provide direct intuitive control; AHP provides academic pairwise rigor.</p>
+        </div>
       </div>
+
+      <div class="tab-segmented">
+        <button class="tab-pill-btn ${S.weightMode==='sliders'?'active':''}" onclick="setWeightMode('sliders')">⚖️ Sliders & Strategic Presets</button>
+        <button class="tab-pill-btn ${S.weightMode==='ahp'?'active':''}" onclick="setWeightMode('ahp')">📐 AHP Pairwise Comparison Matrix</button>
+      </div>
+
       ${modeContent}
-      <div class="field" style="margin-top:14px">
-        <label>Minimum shipments / supplier</label>
-        <input type="number" min="1" max="500" value="${S.minShip}" id="minShip">
+
+      <div style="margin-top:22px;max-width:340px">
+        <label style="display:block;font-size:13px;font-weight:700;margin-bottom:6px">Minimum Shipments per Supplier</label>
+        <input type="number" min="1" max="500" value="${S.minShip}" id="minShip" style="width:100%;padding:9px 12px;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);font-family:var(--font-mono)">
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Suppliers with fewer shipments sit out of rankings to avoid sample noise.</div>
       </div>
-      <button class="btn" id="runBtn">Calculate scorecard →</button>
+
+      <div class="btn-cluster">
+        <button class="btn btn-primary" id="runBtn">Generate Executive Scorecard →</button>
+        <button class="btn btn-secondary" onclick="goto(3)">← Back to Data Audit</button>
+      </div>
     </div>
-    <div class="note"><b>Multi-Criteria Decision Making (MCDM)</b>In standard slider mode, composite score is a linear weighted combination. In AHP mode, weights are derived rigorously from eigenvalue decomposition of pairwise judgements, ensuring mathematical consistency.</div>`;
+  `;
 }
 
 function setWeightMode(mode) {
@@ -527,7 +685,14 @@ function setWeightMode(mode) {
 function viewResults() {
   runAll();
   const {scored, excluded, scenarios, priceOnly, fintechData, allocation, avail} = S.result;
-  if (!scored.length) return `<div class="panel"><p class="err">No suppliers meet the minimum of ${S.minShip || 1} shipments. Lower the minimum on the weights step.</p></div>`;
+  if (!scored.length) {
+    return `
+      <div class="card">
+        <div class="callout-box warn"><b>No eligible suppliers:</b> No vendor has at least ${S.minShip} shipments. Please lower the minimum order threshold on Step 4.</div>
+        <button class="btn btn-primary" onclick="goto(4)">Change Threshold on Step 4</button>
+      </div>
+    `;
+  }
 
   let tabBody = '';
   if (S.activeTab === 'table') tabBody = renderScorecardTable(scored, avail, excluded);
@@ -536,171 +701,216 @@ function viewResults() {
   else if (S.activeTab === 'optimizer') tabBody = renderOptimizerView(allocation);
   else if (S.activeTab === 'baseline') tabBody = renderBaselineView(priceOnly, scored);
 
+  const topVendor = scored[0];
+  const fleetOnTime = mean(scored.map(s => s.onTime)) * 100;
+
   return `
-    <div class="panel">
-      <div class="tab-strip">
-        <button class="tab-pill ${S.activeTab==='table'?'active':''}" onclick="setTab('table')">Scorecard Table</button>
-        <button class="tab-pill ${S.activeTab==='charts'?'active':''}" onclick="setTab('charts')">Visual Dashboard (Figures 5–8)</button>
-        <button class="tab-pill ${S.activeTab==='fintech'?'active':''}" onclick="setTab('fintech')">FinTech Working Capital & Landed Cost</button>
-        <button class="tab-pill ${S.activeTab==='optimizer'?'active':''}" onclick="setTab('optimizer')">What-If Order Allocation</button>
-        <button class="tab-pill ${S.activeTab==='baseline'?'active':''}" onclick="setTab('baseline')">Price-Only Baseline Comparison</button>
+    <div class="card">
+      <div class="card-header-bar">
+        <div>
+          <h2 class="card-headline">SupplyRank Executive Scorecard</h2>
+          <p class="card-subtext">Multi-criteria ranking for ${scored.length} qualified suppliers evaluated across cost, reliability, and resilience.</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-secondary" onclick="exportCsv()">📥 Download CSV</button>
+          <button class="btn btn-secondary" onclick="goto(4)">⚙️ Adjust Weights</button>
+        </div>
       </div>
+
+      <div class="kpi-row" style="margin-bottom:20px">
+        <div class="kpi-card" style="border-left:4px solid var(--teal-600)">
+          <div class="kpi-num" style="color:var(--teal-600)">${esc(topVendor.name.slice(0, 20))}</div>
+          <div class="kpi-caption">#1 Top Recommended Partner (Score: ${fmt(topVendor.composite)})</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-num">${fmt(fleetOnTime, 1)}%</div>
+          <div class="kpi-caption">Fleet Average On-Time Rate</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-num">${scored.length}</div>
+          <div class="kpi-caption">Suppliers Ranked</div>
+        </div>
+      </div>
+
+      <div class="tab-segmented">
+        <button class="tab-pill-btn ${S.activeTab==='table'?'active':''}" onclick="setTab('table')">🏆 Ranked Scorecard</button>
+        <button class="tab-pill-btn ${S.activeTab==='charts'?'active':''}" onclick="setTab('charts')">📊 Visual Dashboard (Figures 5–8)</button>
+        <button class="tab-pill-btn ${S.activeTab==='fintech'?'active':''}" onclick="setTab('fintech')">💰 FinTech Working Capital</button>
+        <button class="tab-pill-btn ${S.activeTab==='optimizer'?'active':''}" onclick="setTab('optimizer')">⚖️ Sourcing Optimizer</button>
+        <button class="tab-pill-btn ${S.activeTab==='baseline'?'active':''}" onclick="setTab('baseline')">🎯 Baseline Comparison (Table 9)</button>
+      </div>
+
       ${tabBody}
     </div>
     ${S.selectedSupplier ? renderSupplierModal(S.selectedSupplier) : ''}
   `;
 }
 
+function handleSort(col) {
+  if (S.sortCol === col) {
+    S.sortAsc = !S.sortAsc;
+  } else {
+    S.sortCol = col;
+    S.sortAsc = (col === 'rank' || col === 'avgDelay');
+  }
+  render();
+}
+
 function renderScorecardTable(scored, avail, excluded) {
   const maxC = Math.max(...scored.map(s => s.composite ?? 0), 1);
-  const rows = scored.map((s, i) => `
-    <tr class="clickable-row" onclick="inspectSupplier('${esc(s.name)}')">
-      <td class="num">${i + 1}</td>
-      <td><b>${esc(s.name)}</b></td>
-      <td class="num"><div class="bar"><span style="width:${((s.composite ?? 0) / maxC) * 100}%"></span></div> <b>${fmt(s.composite)}</b></td>
-      <td class="num">${fmt(s.pillars.cost)}</td>
-      <td class="num">${fmt(s.pillars.reliability)}</td>
-      <td class="num">${fmt(s.pillars.resilience)}</td>
-      <td class="num">${s.n}</td>
-      <td class="num">${fmt(s.onTime * 100, 1)}%</td>
-      <td class="num">${fmt(s.avgDelay)}</td>
-      <td class="num">${s.topsisScore ? fmt(s.topsisScore) : '—'}</td>
-    </tr>`).join('');
+  let sorted = [...scored];
+  if (S.sortCol) {
+    sorted.sort((a, b) => {
+      let va = a[S.sortCol] ?? (a.pillars ? a.pillars[S.sortCol] : null) ?? 0;
+      let vb = b[S.sortCol] ?? (b.pillars ? b.pillars[S.sortCol] : null) ?? 0;
+      return S.sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+    });
+  }
+
+  const filtered = sorted.filter(s => s.name.toLowerCase().includes((S.searchQuery || '').toLowerCase()));
+
+  const rows = filtered.map(s => {
+    let rBadge = 'rank-plain';
+    if (s.rank === 1) rBadge = 'rank-gold';
+    else if (s.rank === 2) rBadge = 'rank-silver';
+    else if (s.rank === 3) rBadge = 'rank-bronze';
+
+    const onTimeGood = s.onTime >= 0.95;
+
+    return `
+      <tr class="row-interactive" onclick="inspectSupplier('${esc(s.name)}')">
+        <td class="num"><span class="rank-badge-pill ${rBadge}">${s.rank}</span></td>
+        <td>
+          <div style="font-weight:700;color:var(--text-main)">${esc(s.name)}</div>
+          <div style="font-size:11.5px;color:var(--text-muted)">${s.n} orders tracked</div>
+        </td>
+        <td class="num">
+          <div class="progress-mini-bar"><div class="progress-mini-fill" style="width:${((s.composite ?? 0)/maxC)*100}%"></div></div>
+          <b style="font-size:14px;color:var(--teal-600)">${fmt(s.composite)}</b>
+        </td>
+        <td class="num">${fmt(s.pillars.cost)}</td>
+        <td class="num">${fmt(s.pillars.reliability)}</td>
+        <td class="num">${fmt(s.pillars.resilience)}</td>
+        <td class="num"><b style="color:${onTimeGood ? 'var(--emerald-600)' : 'var(--rose-600)'}">${fmt(s.onTime * 100, 1)}%</b></td>
+        <td class="num">${fmt(s.avgDelay)} d</td>
+        <td class="num">${s.topsisScore ? fmt(s.topsisScore) : '—'}</td>
+        <td style="text-align:center"><button class="btn btn-secondary" style="padding:4px 10px;font-size:11px" onclick="event.stopPropagation();inspectSupplier('${esc(s.name)}')">Inspect 🔍</button></td>
+      </tr>
+    `;
+  }).join('');
+
+  const sortArrow = col => S.sortCol === col ? (S.sortAsc ? ' ↑' : ' ↓') : '';
 
   return `
-    <h2>Supplier Scorecard Ranking</h2>
-    <p class="small">${scored.length} suppliers ranked. Metrics used: ${avail.map(m => m.label).join(', ')}. ${excluded.length ? `${excluded.length} suppliers excluded for <${S.minShip} shipments.` : ''} <i>Click any supplier row to inspect detailed profile.</i></p>
-    <div class="tablewrap"><table>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:12px">
+      <input type="text" id="supplierSearch" placeholder="🔍 Search supplier name..." value="${esc(S.searchQuery || '')}" style="padding:8px 14px;border:1px solid var(--border-subtle);border-radius:var(--radius-sm);font-family:var(--font-sans);min-width:260px;background:var(--bg-input);color:var(--text-main)">
+      <div style="font-size:12.5px;color:var(--text-muted)">Click any row to open the complete Supplier Audit Inspector</div>
+    </div>
+
+    <div class="table-responsive"><table>
       <thead><tr>
-        <th>#</th>
+        <th style="cursor:pointer" onclick="handleSort('rank')">Rank${sortArrow('rank')}</th>
         <th>Supplier</th>
-        <th class="num">Composite Score</th>
-        <th class="num">Cost</th>
-        <th class="num">Reliability</th>
-        <th class="num">Resilience</th>
-        <th class="num">Shipments</th>
-        <th class="num">On-time</th>
-        <th class="num">Avg delay (d)</th>
-        <th class="num">TOPSIS Score</th>
+        <th class="num" style="cursor:pointer" onclick="handleSort('composite')">Composite Score${sortArrow('composite')}</th>
+        <th class="num" style="cursor:pointer" onclick="handleSort('cost')">Cost${sortArrow('cost')}</th>
+        <th class="num" style="cursor:pointer" onclick="handleSort('reliability')">Reliability${sortArrow('reliability')}</th>
+        <th class="num" style="cursor:pointer" onclick="handleSort('resilience')">Resilience${sortArrow('resilience')}</th>
+        <th class="num" style="cursor:pointer" onclick="handleSort('onTime')">On-Time %${sortArrow('onTime')}</th>
+        <th class="num" style="cursor:pointer" onclick="handleSort('avgDelay')">Avg Delay${sortArrow('avgDelay')}</th>
+        <th class="num">TOPSIS</th>
+        <th style="text-align:center">Action</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
-    <div class="btnrow" style="margin-top:14px">
-      <button class="btn alt" onclick="exportCsv()">Download Scorecard CSV</button>
-      <button class="btn alt" onclick="goto(4)">Modify Weights</button>
-    </div>
   `;
 }
 
-// ---------- Figures 5, 6, 7, 8 in SVG ----------
-function renderInteractiveCharts(scored, scenarios) {
-  // SVG Chart 1: Figure 5 Composite Scores Bar Chart
-  const svgFig5 = generateSVGCompositeBar(scored);
-  // SVG Chart 2: Figure 6 Pillar Scores Top 10
-  const svgFig6 = generateSVGPillarBreakdown(scored.slice(0, 10));
-  // SVG Chart 3: Figure 7 Price Index vs Composite Score Bubble Chart
-  const svgFig7 = generateSVGBubbleChart(scored);
-  // SVG Table: Figure 8 Sensitivity Heatmap Matrix
-  const htmlFig8 = generateSensitivityHeatmap(scored.slice(0, 10), scenarios);
-
-  return `
-    <div class="chart-card">
-      <div class="chart-header">
-        <div>
-          <h3 class="chart-title">Figure 5: Composite Score of All Ranked Vendors</h3>
-          <p class="chart-desc">Horizontal bar chart matching report figure. Teal = Top 10, Red = Bottom 5.</p>
-        </div>
-      </div>
-      <div class="chart-svg-wrap">${svgFig5}</div>
-      <div class="chart-legend">
-        <span class="legend-item"><span class="legend-color" style="background:#1F6F6B"></span> Top 10 Leaders</span>
-        <span class="legend-item"><span class="legend-color" style="background:#8A959E"></span> Middle Ranked</span>
-        <span class="legend-item"><span class="legend-color" style="background:#B0402E"></span> Bottom 5 High Risk</span>
-      </div>
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-header">
-        <div>
-          <h3 class="chart-title">Figure 6: Pillar Scores of the Top 10 Vendors</h3>
-          <p class="chart-desc">Cost Efficiency, Delivery Reliability, and Supply Chain Resilience breakdown.</p>
-        </div>
-      </div>
-      <div class="chart-svg-wrap">${svgFig6}</div>
-      <div class="chart-legend">
-        <span class="legend-item"><span class="legend-color" style="background:#E5A83B"></span> Cost Efficiency</span>
-        <span class="legend-item"><span class="legend-color" style="background:#1F6F6B"></span> Delivery Reliability</span>
-        <span class="legend-item"><span class="legend-color" style="background:#4A6FA5"></span> Resilience</span>
-      </div>
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-header">
-        <div>
-          <h3 class="chart-title">Figure 7: Price Index vs. Composite Score Trade-Off</h3>
-          <p class="chart-desc">Bubble size represents shipment volume. Shows how low price often masks poor reliability.</p>
-        </div>
-      </div>
-      <div class="chart-svg-wrap">${svgFig7}</div>
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-header">
-        <div>
-          <h3 class="chart-title">Figure 8: Sensitivity Analysis — Weight Scenario Stability</h3>
-          <p class="chart-desc">Ranks under 4 scenarios. Teal = Top 3, Peach = Drops out of top 8.</p>
-        </div>
-      </div>
-      ${htmlFig8}
-    </div>
-  `;
-}
-
+// ---------- Figures 5, 6, 7, 8 SVG Charts ----------
 function cleanShortName(s) {
   let c = s.replace(/\(.*?\)/g, '').trim();
   if (c.length > 25) c = c.slice(0, 23) + '...';
   return c;
 }
 
+function renderInteractiveCharts(scored, scenarios) {
+  const svgFig5 = generateSVGCompositeBar(scored);
+  const svgFig6 = generateSVGPillarBreakdown(scored.slice(0, 10));
+  const svgFig7 = generateSVGBubbleChart(scored);
+  const htmlFig8 = generateSensitivityHeatmap(scored.slice(0, 10), scenarios);
+
+  return `
+    <div class="chart-box">
+      <h3 style="margin:0 0 4px;font-size:16px">Figure 5: Composite Score Ranking (All Vendors)</h3>
+      <p style="margin:0 0 16px;font-size:13px;color:var(--text-muted)">Direct reproduction of Report Figure 5. Horizontal bar chart color-coded: Teal = Top 10 Leaders, Slate = Middle, Red = Bottom 5 Riskiest.</p>
+      <div class="chart-svg-container">${svgFig5}</div>
+      <div class="chart-legend-row">
+        <span class="legend-chip"><span class="legend-box" style="background:#0D9488"></span> Top 10 Leaders</span>
+        <span class="legend-chip"><span class="legend-box" style="background:#64748B"></span> Middle Tier</span>
+        <span class="legend-chip"><span class="legend-box" style="background:#E11D48"></span> Bottom 5 High-Risk</span>
+      </div>
+    </div>
+
+    <div class="chart-box">
+      <h3 style="margin:0 0 4px;font-size:16px">Figure 6: Three-Pillar Breakdown of Top 10 Suppliers</h3>
+      <p style="margin:0 0 16px;font-size:13px;color:var(--text-muted)">Cost Efficiency, Delivery Reliability, and Supply Chain Resilience breakdown for leaders.</p>
+      <div class="chart-svg-container">${svgFig6}</div>
+      <div class="chart-legend-row">
+        <span class="legend-chip"><span class="legend-box" style="background:#F59E0B"></span> Cost Efficiency</span>
+        <span class="legend-chip"><span class="legend-box" style="background:#0D9488"></span> Delivery Reliability</span>
+        <span class="legend-chip"><span class="legend-box" style="background:#4F46E5"></span> Supply Chain Resilience</span>
+      </div>
+    </div>
+
+    <div class="chart-box">
+      <h3 style="margin:0 0 4px;font-size:16px">Figure 7: Price Index vs. Composite Score Trade-Off</h3>
+      <p style="margin:0 0 16px;font-size:13px;color:var(--text-muted)">Bubble size is proportional to shipment volume. Reveals how cheap suppliers often fail on delivery execution.</p>
+      <div class="chart-svg-container">${svgFig7}</div>
+    </div>
+
+    <div class="chart-box">
+      <h3 style="margin:0 0 4px;font-size:16px">Figure 8: Sensitivity Analysis — Weight Scenario Stability</h3>
+      <p style="margin:0 0 16px;font-size:13px;color:var(--text-muted)">Ranks under 4 strategic scenarios. Green = Top 3 (Safe recommendations), Red = Drops out of Top 8.</p>
+      ${htmlFig8}
+    </div>
+  `;
+}
+
 function generateSVGCompositeBar(scored) {
   const n = scored.length;
-  const barHeight = 22, gap = 6, padTop = 20, padLeft = 210, padRight = 50, padBottom = 30;
+  const barHeight = 22, gap = 6, padTop = 15, padLeft = 210, padRight = 50, padBottom = 25;
   const W = 800;
   const H = padTop + n * (barHeight + gap) + padBottom;
-  const maxScore = 100;
   const plotW = W - padLeft - padRight;
 
   let bars = '';
   scored.forEach((s, i) => {
     const y = padTop + i * (barHeight + gap);
     const score = s.composite ?? 0;
-    const w = (score / maxScore) * plotW;
-    let color = '#8A959E';
-    if (i < 10) color = '#1F6F6B';
-    else if (i >= n - 5) color = '#B0402E';
+    const w = (score / 100) * plotW;
+    let color = '#64748B';
+    if (i < 10) color = '#0D9488';
+    else if (i >= n - 5) color = '#E11D48';
 
     bars += `
-      <text x="${padLeft - 10}" y="${y + 15}" font-size="11" fill="currentColor" text-anchor="end">${cleanShortName(s.name)}</text>
-      <rect x="${padLeft}" y="${y}" width="${w}" height="${barHeight}" rx="3" fill="${color}" opacity="0.9"></rect>
-      <text x="${padLeft + w + 8}" y="${y + 15}" font-size="11" font-weight="600" fill="currentColor">${fmt(score)}</text>
+      <text x="${padLeft - 12}" y="${y + 15}" font-size="11.5" fill="currentColor" text-anchor="end" font-weight="600">${cleanShortName(s.name)}</text>
+      <rect x="${padLeft}" y="${y}" width="${w}" height="${barHeight}" rx="4" fill="${color}" opacity="0.9"></rect>
+      <text x="${padLeft + w + 8}" y="${y + 15}" font-size="11" font-weight="700" fill="currentColor">${fmt(score)}</text>
     `;
   });
 
-  // Axis grid
   let grid = '';
   for (let sc = 0; sc <= 100; sc += 20) {
     const gx = padLeft + (sc / 100) * plotW;
     grid += `
-      <line x1="${gx}" y1="${padTop - 5}" x2="${gx}" y2="${H - padBottom}" stroke="#EAE8E0" stroke-dasharray="3,3" />
-      <text x="${gx}" y="${H - 12}" font-size="10" fill="#96998F" text-anchor="middle">${sc}</text>
+      <line x1="${gx}" y1="${padTop}" x2="${gx}" y2="${H - padBottom}" stroke="var(--border-subtle)" stroke-dasharray="3,3" />
+      <text x="${gx}" y="${H - 8}" font-size="10" fill="var(--text-muted)" text-anchor="middle">${sc}</text>
     `;
   }
-
-  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg">${grid}${bars}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg-element">${grid}${bars}</svg>`;
 }
 
 function generateSVGPillarBreakdown(top10) {
-  const W = 800, H = 280, padTop = 30, padLeft = 50, padRight = 30, padBottom = 60;
+  const W = 800, H = 270, padTop = 25, padLeft = 45, padRight = 20, padBottom = 55;
   const plotW = W - padLeft - padRight;
   const plotH = H - padTop - padBottom;
   const groupW = plotW / top10.length;
@@ -710,93 +920,82 @@ function generateSVGPillarBreakdown(top10) {
   for (let s = 0; s <= 100; s += 25) {
     const gy = padTop + plotH - (s / 100) * plotH;
     grid += `
-      <line x1="${padLeft}" y1="${gy}" x2="${W - padRight}" y2="${gy}" stroke="#EAE8E0" stroke-dasharray="2,2"/>
-      <text x="${padLeft - 8}" y="${gy + 4}" font-size="10" fill="#96998F" text-anchor="end">${s}</text>
+      <line x1="${padLeft}" y1="${gy}" x2="${W - padRight}" y2="${gy}" stroke="var(--border-subtle)" stroke-dasharray="2,2"/>
+      <text x="${padLeft - 8}" y="${gy + 4}" font-size="10" fill="var(--text-muted)" text-anchor="end">${s}</text>
     `;
   }
 
   top10.forEach((s, i) => {
     const gx = padLeft + i * groupW + 7;
-    const cVal = s.pillars.cost ?? 0;
-    const rVal = s.pillars.reliability ?? 0;
-    const sVal = s.pillars.resilience ?? 0;
-
-    const cH = (cVal / 100) * plotH;
-    const rH = (rVal / 100) * plotH;
-    const sH = (sVal / 100) * plotH;
+    const cH = ((s.pillars.cost ?? 0) / 100) * plotH;
+    const rH = ((s.pillars.reliability ?? 0) / 100) * plotH;
+    const sH = ((s.pillars.resilience ?? 0) / 100) * plotH;
 
     bars += `
-      <rect x="${gx}" y="${padTop + plotH - cH}" width="${barW}" height="${cH}" rx="2" fill="#E5A83B"></rect>
-      <rect x="${gx + barW + 1}" y="${padTop + plotH - rH}" width="${barW}" height="${rH}" rx="2" fill="#1F6F6B"></rect>
-      <rect x="${gx + 2*barW + 2}" y="${padTop + plotH - sH}" width="${barW}" height="${sH}" rx="2" fill="#4A6FA5"></rect>
+      <rect x="${gx}" y="${padTop + plotH - cH}" width="${barW}" height="${cH}" rx="2" fill="#F59E0B"></rect>
+      <rect x="${gx + barW + 1}" y="${padTop + plotH - rH}" width="${barW}" height="${rH}" rx="2" fill="#0D9488"></rect>
+      <rect x="${gx + 2*barW + 2}" y="${padTop + plotH - sH}" width="${barW}" height="${sH}" rx="2" fill="#4F46E5"></rect>
     `;
-
     labels += `
-      <text x="${gx + groupW/2 - 7}" y="${H - padBottom + 16}" font-size="9" fill="currentColor" text-anchor="end" transform="rotate(-30, ${gx + groupW/2 - 7}, ${H - padBottom + 16})">${cleanShortName(s.name)}</text>
+      <text x="${gx + groupW/2 - 7}" y="${H - padBottom + 16}" font-size="9.5" fill="currentColor" text-anchor="end" font-weight="600" transform="rotate(-30, ${gx + groupW/2 - 7}, ${H - padBottom + 16})">${cleanShortName(s.name)}</text>
     `;
   });
-
-  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg">${grid}${bars}${labels}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg-element">${grid}${bars}${labels}</svg>`;
 }
 
 function generateSVGBubbleChart(scored) {
-  const W = 800, H = 340, padTop = 30, padLeft = 60, padRight = 50, padBottom = 50;
+  const W = 800, H = 320, padTop = 25, padLeft = 55, padRight = 40, padBottom = 45;
   const plotW = W - padLeft - padRight;
   const plotH = H - padTop - padBottom;
-
   const valid = scored.filter(s => s.pidx != null);
-  // Log scale for Price Index (from 0.3 to 30)
   const minLog = Math.log10(0.3), maxLog = Math.log10(30);
   const minScore = 35, maxScore = 90;
 
   const getX = p => padLeft + ((Math.log10(Math.max(0.3, p)) - minLog) / (maxLog - minLog)) * plotW;
   const getY = s => padTop + plotH - ((s - minScore) / (maxScore - minScore)) * plotH;
 
-  let grid = '';
-  // Benchmark line at 1.0
   const refX = getX(1.0);
-  grid += `<line x1="${refX}" y1="${padTop}" x2="${refX}" y2="${H - padBottom}" stroke="#B6752D" stroke-dasharray="4,4" stroke-width="1.5" />
-           <text x="${refX + 4}" y="${padTop + 12}" font-size="10" fill="#B6752D" font-weight="600">Market Benchmark (1.0)</text>`;
+  let grid = `
+    <line x1="${refX}" y1="${padTop}" x2="${refX}" y2="${H - padBottom}" stroke="#D97706" stroke-dasharray="4,4" stroke-width="1.5" />
+    <text x="${refX + 6}" y="${padTop + 14}" font-size="10" fill="#D97706" font-weight="700">Market Median Benchmark (1.0x)</text>
+  `;
 
-  // Y-axis grid
   for (let sc = 40; sc <= 90; sc += 10) {
     const gy = getY(sc);
     grid += `
-      <line x1="${padLeft}" y1="${gy}" x2="${W - padRight}" y2="${gy}" stroke="#EAE8E0" stroke-dasharray="2,2"/>
-      <text x="${padLeft - 8}" y="${gy + 4}" font-size="10" fill="#96998F" text-anchor="end">${sc}</text>
+      <line x1="${padLeft}" y1="${gy}" x2="${W - padRight}" y2="${gy}" stroke="var(--border-subtle)" stroke-dasharray="2,2"/>
+      <text x="${padLeft - 8}" y="${gy + 4}" font-size="10" fill="var(--text-muted)" text-anchor="end">${sc}</text>
     `;
   }
-  // X ticks
   [0.4, 1.0, 2.0, 5.0, 10.0, 25.0].forEach(pv => {
     const gx = getX(pv);
-    grid += `<text x="${gx}" y="${H - padBottom + 18}" font-size="10" fill="#96998F" text-anchor="middle">${pv}x</text>`;
+    grid += `<text x="${gx}" y="${H - padBottom + 16}" font-size="10" fill="var(--text-muted)" text-anchor="middle">${pv}x</text>`;
   });
 
   let bubbles = '', labels = '';
   valid.forEach((s, i) => {
     const cx = getX(s.pidx);
     const cy = getY(s.composite ?? 50);
-    const rad = Math.max(4, Math.min(22, Math.sqrt(s.n) * 0.7));
-    let col = '#8A959E';
-    if (i < 10) col = '#1F6F6B';
-    else if (i >= valid.length - 5) col = '#B0402E';
+    const rad = Math.max(5, Math.min(22, Math.sqrt(s.n) * 0.7));
+    let col = '#64748B';
+    if (i < 10) col = '#0D9488';
+    else if (i >= valid.length - 5) col = '#E11D48';
 
-    bubbles += `<circle cx="${cx}" cy="${cy}" r="${rad}" fill="${col}" fill-opacity="0.75" stroke="#1C2226" stroke-width="0.7"><title>${esc(s.name)}: Score ${fmt(s.composite)}, PriceIdx ${fmt(s.pidx, 2)}, Shipments ${s.n}</title></circle>`;
+    bubbles += `<circle cx="${cx}" cy="${cy}" r="${rad}" fill="${col}" fill-opacity="0.8" stroke="var(--bg-card)" stroke-width="1.5"><title>${esc(s.name)}: Score ${fmt(s.composite)}, PriceIdx ${fmt(s.pidx, 2)}, Shipments ${s.n}</title></circle>`;
 
-    // Annotate notable suppliers
-    const notable = ['micro labs', 'strides', 'aurobindo', 'cipla', 'shanghai', 'bristol', 'pharmacy direct'];
+    const notable = ['micro labs', 'strides', 'aurobindo', 'cipla', 'shanghai', 'bristol', 'pharmacy direct', 'zenith', 'bargain'];
     if (notable.some(sub => s.name.toLowerCase().includes(sub))) {
-      labels += `<text x="${cx + rad + 4}" y="${cy + 4}" font-size="9.5" font-weight="600" fill="currentColor">${cleanShortName(s.name)}</text>`;
+      labels += `<text x="${cx + rad + 4}" y="${cy + 4}" font-size="9.5" font-weight="700" fill="currentColor">${cleanShortName(s.name)}</text>`;
     }
   });
 
   return `
-    <svg viewBox="0 0 ${W} ${H}" class="chart-svg">
+    <svg viewBox="0 0 ${W} ${H}" class="chart-svg-element">
       ${grid}
       ${bubbles}
       ${labels}
-      <text x="${W/2}" y="${H - 12}" font-size="11" fill="#6E7570" text-anchor="middle">Price Index (Log scale — Below 1.0 = Cheaper than Product Group Median)</text>
-      <text x="18" y="${H/2}" font-size="11" fill="#6E7570" text-anchor="middle" transform="rotate(-90, 18, ${H/2})">Composite Score</text>
+      <text x="${W/2}" y="${H - 8}" font-size="11" fill="var(--text-muted)" text-anchor="middle">Price Index (Log Scale — Below 1.0x = Cheaper than Product Group Median)</text>
+      <text x="14" y="${H/2}" font-size="11" fill="var(--text-muted)" text-anchor="middle" transform="rotate(-90, 14, ${H/2})">Composite Score</text>
     </svg>
   `;
 }
@@ -805,139 +1004,145 @@ function generateSensitivityHeatmap(top10, scenarios) {
   const rows = top10.map(s => {
     const scCells = Object.keys(PRESETS).map(p => {
       const r = scenarios[p][s.name];
-      let bClass = 'heat-neutral';
-      if (r <= 3) bClass = 'heat-top3';
-      else if (r > 8) bClass = 'heat-drop';
-      return `<td class="num"><span class="heat-badge ${bClass}">${r}</span></td>`;
+      let bg = 'var(--bg-subtle)';
+      let col = 'var(--text-main)';
+      if (r <= 3) { bg = 'var(--emerald-50)'; col = 'var(--emerald-600)'; }
+      else if (r > 8) { bg = 'var(--rose-50)'; col = 'var(--rose-600)'; }
+      return `<td class="num"><span style="background:${bg};color:${col};padding:3px 10px;border-radius:var(--radius-sm);font-weight:800;font-family:var(--font-mono)">${r}</span></td>`;
     }).join('');
     return `<tr><td><b>${esc(s.name)}</b></td>${scCells}</tr>`;
   }).join('');
 
   return `
-    <div class="tablewrap"><table>
+    <div class="table-responsive"><table>
       <thead><tr>
-        <th>Supplier</th>
+        <th>Top 10 Supplier</th>
         ${Object.keys(PRESETS).map(p => `<th class="num">${p}</th>`).join('')}
       </tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
-    <div class="chart-legend" style="margin-top:8px">
-      <span class="legend-item"><span class="heat-badge heat-top3">1-3</span> Top 3 Leaders (Safe recommendation)</span>
-      <span class="legend-item"><span class="heat-badge heat-neutral">4-8</span> Stable Top 8</span>
-      <span class="legend-item"><span class="heat-badge heat-drop">&gt;8</span> Drops out of Top 8 (Weight-sensitive)</span>
-    </div>
   `;
 }
 
-// ---------- FinTech View (Chapter 9 Implementation) ----------
+// ---------- FinTech View ----------
 function renderFintechView(fintechData) {
   const p = S.finParams;
-  const rows = fintechData.map((s, i) => `
+  const rows = fintechData.map(s => `
     <tr>
-      <td class="num">${i + 1}</td>
+      <td class="num"><span class="rank-badge-pill rank-plain">${s.rank}</span></td>
       <td><b>${esc(s.name)}</b></td>
       <td class="num">${fmt(s.delayStd)} d</td>
       <td class="num">${s.ssUnits.toLocaleString()}</td>
       <td class="num">$${fmt(s.capitalLocked, 0)}</td>
       <td class="num">$${fmt(s.annualHoldingCost, 0)}</td>
       <td class="num">$${fmt(s.basePrice, 2)}</td>
-      <td class="num" style="color:var(--bad)">+$${fmt(s.holdingCostPerUnit, 3)}</td>
-      <td class="num"><b>$${fmt(s.trueLandedCost, 2)}</b></td>
+      <td class="num" style="color:var(--rose-600)">+$${fmt(s.holdingCostPerUnit, 3)}</td>
+      <td class="num"><b style="color:var(--teal-600)">$${fmt(s.trueLandedCost, 2)}</b></td>
     </tr>
   `).join('');
 
   return `
-    <h2>FinTech Impact: Working Capital & Safety Stock Carrying Cost</h2>
-    <p class="small">Translates supply chain volatility into balance sheet impact (Chapter 9). High delivery delay spread forces procurement to hold buffer safety stock, directly raising total landed cost.</p>
+    <div class="card-subtext" style="margin-bottom:16px">Translates lead-time volatility into financial impact. High delivery delay spread forces procurement to hold extra safety stock, quietly raising the real landed cost.</div>
     
-    <div class="fin-params">
-      <div class="fin-param-group">
-        <label>Annual Demand (units)</label>
-        <input type="number" id="finDemand" value="${p.demand}" min="1000" step="5000">
+    <div class="kpi-row" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+      <div class="kpi-card">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:600">Annual Demand (units)</label>
+        <input type="number" id="finDemand" value="${p.demand}" min="1000" step="5000" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);font-family:var(--font-mono);background:var(--bg-input);color:var(--text-main)">
       </div>
-      <div class="fin-param-group">
-        <label>Holding Cost Rate (%/yr)</label>
-        <input type="number" id="finRate" value="${p.holdingRate}" min="5" max="50">
+      <div class="kpi-card">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:600">Holding Cost Rate (%/yr)</label>
+        <input type="number" id="finRate" value="${p.holdingRate}" min="5" max="50" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);font-family:var(--font-mono);background:var(--bg-input);color:var(--text-main)">
       </div>
-      <div class="fin-param-group">
-        <label>Target Service Level (%)</label>
-        <input type="number" id="finService" value="${p.serviceLevel}" min="80" max="99">
+      <div class="kpi-card">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:600">Target Service Level (%)</label>
+        <input type="number" id="finService" value="${p.serviceLevel}" min="80" max="99" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);font-family:var(--font-mono);background:var(--bg-input);color:var(--text-main)">
       </div>
     </div>
 
-    <div class="tablewrap"><table>
+    <div class="table-responsive" style="margin-top:18px"><table>
       <thead><tr>
-        <th>#</th>
+        <th>Rank</th>
         <th>Supplier</th>
         <th class="num">Delay Spread (σ)</th>
         <th class="num">Buffer Safety Stock</th>
-        <th class="num">Working Capital Locked</th>
-        <th class="num">Annual Holding Cost</th>
+        <th class="num">Capital Tied Up</th>
+        <th class="num">Annual Carrying Cost</th>
         <th class="num">Sticker Price</th>
-        <th class="num">Volatility Penalty/Unit</th>
-        <th class="num">True Landed Cost/Unit</th>
+        <th class="num">Risk Penalty/Unit</th>
+        <th class="num">True Landed Cost</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
-    <div class="note"><b>FinTech Insight:</b> A supplier offering a 5% cheaper unit price can easily produce a net financial loss if their delivery delay standard deviation requires 500+ extra units of safety stock and working capital carrying cost.</div>
   `;
 }
 
-// ---------- What-If Sourcing Optimizer View (Chapter 11) ----------
+// ---------- What-If Optimizer View ----------
 function renderOptimizerView(allocation) {
   const opt = S.optParams;
-  const colors = ['#1F6F6B', '#2E8B84', '#E5A83B', '#4A6FA5', '#B0402E', '#6E7570', '#8A959E'];
+  const colors = ['#0D9488', '#0284C7', '#D97706', '#4F46E5', '#E11D48', '#059669', '#64748B'];
 
   const barSegments = allocation.allocations.map((a, i) => `
-    <div class="alloc-seg" style="width:${a.pct}%;background:${colors[i % colors.length]}">${cleanShortName(a.name)} (${fmt(a.pct, 0)}%)</div>
+    <div class="order-alloc-part" style="width:${a.pct}%;background:${colors[i % colors.length]}">
+      ${cleanShortName(a.name)} (${fmt(a.pct, 0)}%)
+    </div>
   `).join('');
 
   const rows = allocation.allocations.map((a, i) => `
     <tr>
-      <td><span class="legend-color" style="display:inline-block;vertical-align:middle;margin-right:6px;background:${colors[i % colors.length]}"></span> <b>${esc(a.name)}</b></td>
+      <td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${colors[i % colors.length]};margin-right:8px"></span> <b>${esc(a.name)}</b></td>
       <td class="num">${a.units.toLocaleString()}</td>
       <td class="num"><b>${fmt(a.pct, 1)}%</b></td>
       <td class="num">${fmt(a.onTime * 100, 1)}%</td>
-      <td class="num">${fmt(a.cost, 2)}</td>
+      <td class="num">${fmt(a.cost, 2)}x</td>
     </tr>
   `).join('');
 
   return `
-    <h2>What-If Sourcing Order Allocation Optimizer</h2>
-    <p class="small">Linear programming allocation solving order volume split across top suppliers to minimize cost while satisfying reliability constraints and avoiding single-supplier concentration risk.</p>
+    <div class="card-subtext" style="margin-bottom:16px">Linear programming solver that distributes order quantity across top suppliers to minimize cost while guaranteeing target delivery reliability.</div>
 
-    <div class="fin-params">
-      <div class="fin-param-group">
-        <label>Total Order Volume (units)</label>
-        <input type="number" id="optVolume" value="${opt.orderVolume}" min="10000" step="10000">
+    <div class="kpi-row" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+      <div class="kpi-card">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:600">Total Order Volume (units)</label>
+        <input type="number" id="optVolume" value="${opt.orderVolume}" min="10000" step="10000" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);font-family:var(--font-mono);background:var(--bg-input);color:var(--text-main)">
       </div>
-      <div class="fin-param-group">
-        <label>Min Target Reliability (%)</label>
-        <input type="number" id="optRel" value="${opt.minReliability}" min="80" max="100">
+      <div class="kpi-card">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:600">Min Target Reliability (%)</label>
+        <input type="number" id="optRel" value="${opt.minReliability}" min="80" max="100" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);font-family:var(--font-mono);background:var(--bg-input);color:var(--text-main)">
       </div>
-      <div class="fin-param-group">
-        <label>Max Single Vendor Share (%)</label>
-        <input type="number" id="optShare" value="${opt.maxShare}" min="20" max="100">
+      <div class="kpi-card">
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;font-weight:600">Max Single Vendor Cap (%)</label>
+        <input type="number" id="optShare" value="${opt.maxShare}" min="20" max="100" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);font-family:var(--font-mono);background:var(--bg-input);color:var(--text-main)">
       </div>
     </div>
 
-    <div style="margin: 14px 0">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Optimal Order Allocation Split:</div>
-      <div class="alloc-bar-wrap">${barSegments}</div>
+    <div style="margin: 20px 0 10px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:6px">Optimal Order Allocation Split:</div>
+      <div class="order-alloc-stack">
+        ${barSegments}
+      </div>
     </div>
 
-    <div class="stats" style="margin-top:14px">
-      <div><b>${fmt(allocation.blendedRel * 100, 1)}%</b><span class="lbl">Blended On-Time Rate</span></div>
-      <div><b>${fmt(allocation.blendedCost, 2)}x</b><span class="lbl">Blended Price Index</span></div>
-      <div><b>${allocation.allocations.length}</b><span class="lbl">Suppliers in Split</span></div>
+    <div class="kpi-row" style="margin: 18px 0;">
+      <div class="kpi-card">
+        <div class="kpi-num" style="color:var(--emerald-600)">${fmt(allocation.blendedRel * 100, 1)}%</div>
+        <div class="kpi-caption">Blended On-Time Delivery Rate</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num">${fmt(allocation.blendedCost, 2)}x</div>
+        <div class="kpi-caption">Blended Price Index</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num">${allocation.allocations.length}</div>
+        <div class="kpi-caption">Diversified Suppliers</div>
+      </div>
     </div>
 
-    <div class="tablewrap"><table>
+    <div class="table-responsive"><table>
       <thead><tr>
         <th>Allocated Supplier</th>
         <th class="num">Order Units</th>
-        <th class="num">Allocation Share</th>
-        <th class="num">Supplier Reliability</th>
+        <th class="num">Share %</th>
+        <th class="num">Reliability Rate</th>
         <th class="num">Price Index</th>
       </tr></thead>
       <tbody>${rows}</tbody>
@@ -953,10 +1158,10 @@ function renderBaselineView(priceOnly, scored) {
     const scRank = scMatch ? scMatch.rank : '—';
     return `
       <tr>
-        <td class="num">${i + 1}</td>
+        <td class="num"><span class="rank-badge-pill rank-plain">#${i + 1}</span></td>
         <td><b>${esc(s.name)}</b></td>
-        <td class="num">${fmt(s.pidx ?? s.rawPrice, 2)}</td>
-        <td class="num"><b>#${scRank}</b></td>
+        <td class="num">${fmt(s.pidx ?? s.rawPrice, 2)}x</td>
+        <td class="num"><b style="color:${scRank <= 10 ? 'var(--emerald-600)' : 'var(--rose-600)'}">#${scRank}</b></td>
         <td class="num">${fmt(s.onTime * 100, 1)}%</td>
         <td class="num">${fmt(s.avgDelay)} d</td>
       </tr>
@@ -964,9 +1169,8 @@ function renderBaselineView(priceOnly, scored) {
   }).join('');
 
   return `
-    <h2>Baseline: Naive Price-Only Ranking vs. Balanced Scorecard</h2>
-    <p class="small">Direct reproduction of Table 9 from the report. Shows how vendors that appear cheapest on paper plummet down the rankings once on-time delivery and resilience are considered.</p>
-    <div class="tablewrap"><table>
+    <div class="card-subtext" style="margin-bottom:16px">Direct replication of Table 9 from the report. Illustrates how low sticker prices deceive buyers when delivery failure rates are omitted.</div>
+    <div class="table-responsive"><table>
       <thead><tr>
         <th>Price Rank</th>
         <th>Supplier</th>
@@ -977,7 +1181,9 @@ function renderBaselineView(priceOnly, scored) {
       </tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
-    <div class="note"><b>Report Key Finding:</b> Aurobindo Pharma and Cipla are the 5th and 6th cheapest vendors, but drop to 22nd and 24th out of 25 on the balanced scorecard because ~14% of their shipments arrive late with 4–5 days average delay.</div>
+    <div class="callout-box" style="margin-top:20px">
+      <b>Key Finding from USAID Dataset:</b> Aurobindo Pharma and Cipla rank 5th and 6th cheapest on price alone, but plummet to 22nd and 24th out of 25 once reliability is factored in, because ~14% of shipments arrive late with 4–5 days average delay.
+    </div>
   `;
 }
 
@@ -996,37 +1202,53 @@ function closeSupplierModal() {
 
 function renderSupplierModal(s) {
   return `
-    <div class="modal-backdrop" onclick="if(event.target===this)closeSupplierModal()">
-      <div class="modal-box">
-        <div class="modal-header">
-          <h3>${esc(s.name)}</h3>
-          <button class="modal-close" onclick="closeSupplierModal()">&times;</button>
-        </div>
-        <div class="stats" style="margin-bottom:14px">
-          <div><b>#${s.rank}</b><span class="lbl">Scorecard Rank</span></div>
-          <div><b>${fmt(s.composite)}</b><span class="lbl">Composite Score</span></div>
-          <div><b>${s.n}</b><span class="lbl">Total Shipments</span></div>
-          <div><b>${fmt(s.onTime*100, 1)}%</b><span class="lbl">On-Time Rate</span></div>
+    <div class="modal-layer" onclick="if(event.target===this)closeSupplierModal()">
+      <div class="modal-dialog">
+        <div class="modal-header-row">
+          <div>
+            <h3 style="margin:0;font-size:19px;font-weight:800">${esc(s.name)}</h3>
+            <span style="font-size:12.5px;color:var(--text-muted)">Supplier Detailed Audit & Risk Profile</span>
+          </div>
+          <button class="modal-close-btn" onclick="closeSupplierModal()">&times;</button>
         </div>
 
-        <h4 style="margin:12px 0 6px">Pillar Breakdown (0–100)</h4>
-        <div class="tablewrap" style="margin-bottom:14px"><table>
+        <div class="kpi-row" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+          <div class="kpi-card">
+            <div class="kpi-num" style="color:var(--teal-600)">#${s.rank}</div>
+            <div class="kpi-caption">Executive Rank</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-num">${fmt(s.composite)}</div>
+            <div class="kpi-caption">Composite Score</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-num">${s.n}</div>
+            <div class="kpi-caption">Total Orders</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-num" style="color:${s.onTime >= 0.95 ? 'var(--emerald-600)' : 'var(--rose-600)'}">${fmt(s.onTime*100, 1)}%</div>
+            <div class="kpi-caption">On-Time Rate</div>
+          </div>
+        </div>
+
+        <h4 style="margin:18px 0 8px;font-size:14px">Pillar Scores (0–100 Scale)</h4>
+        <div class="table-responsive" style="margin-bottom:18px"><table>
           <tr><td><b>Cost Efficiency</b></td><td class="num"><b>${fmt(s.pillars.cost)}</b></td></tr>
           <tr><td><b>Delivery Reliability</b></td><td class="num"><b>${fmt(s.pillars.reliability)}</b></td></tr>
           <tr><td><b>Supply Chain Resilience</b></td><td class="num"><b>${fmt(s.pillars.resilience)}</b></td></tr>
         </table></div>
 
-        <h4 style="margin:12px 0 6px">Underlying Operational Metrics</h4>
-        <div class="tablewrap"><table>
-          <tr><td>Price Index (vs median)</td><td class="num">${s.pidx!=null ? fmt(s.pidx, 2) : '—'}</td></tr>
-          <tr><td>Freight Ratio (Freight/Value)</td><td class="num">${s.fr!=null ? fmt(s.fr, 3) : '—'}</td></tr>
+        <h4 style="margin:18px 0 8px;font-size:14px">Operational Metrics</h4>
+        <div class="table-responsive"><table>
+          <tr><td>Price Index (vs product group median)</td><td class="num">${s.pidx!=null ? fmt(s.pidx, 2) + 'x' : '—'}</td></tr>
+          <tr><td>Freight Ratio (Freight Cost / Order Value)</td><td class="num">${s.fr!=null ? fmt(s.fr, 3) : '—'}</td></tr>
           <tr><td>Average Delivery Delay</td><td class="num">${fmt(s.avgDelay)} days</td></tr>
-          <tr><td>Delay Spread (Std Dev σ)</td><td class="num">${fmt(s.delayStd)} days</td></tr>
-          <tr><td>Monthly Consistency (Std Dev)</td><td class="num">${s.monthStd!=null ? fmt(s.monthStd, 3) : '—'}</td></tr>
+          <tr><td>Delay Spread (Standard Deviation σ)</td><td class="num">${fmt(s.delayStd)} days</td></tr>
+          <tr><td>Monthly On-Time Rate Spread</td><td class="num">${s.monthStd!=null ? fmt(s.monthStd, 3) : '—'}</td></tr>
         </table></div>
 
-        <div style="text-align:right;margin-top:16px">
-          <button class="btn" onclick="closeSupplierModal()">Close</button>
+        <div style="text-align:right;margin-top:22px">
+          <button class="btn btn-primary" onclick="closeSupplierModal()">Close Inspector</button>
         </div>
       </div>
     </div>
@@ -1042,7 +1264,7 @@ function exportCsv() {
     fmt(s.pillars.resilience, 2), s.n, fmt(s.onTime, 4), fmt(s.avgDelay, 2), fmt(s.pidx, 3), fmt(s.fr, 3)].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
   const blob = new Blob([[head.join(','), ...lines].join('\n')], {type: 'text/csv'});
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = 'supplier_scorecard_results.csv'; a.click();
+  a.href = URL.createObjectURL(blob); a.download = 'supplyrank_results.csv'; a.click();
 }
 
 function isCsv(file) {
@@ -1051,36 +1273,67 @@ function isCsv(file) {
   return nameOk && typeOk;
 }
 
-async function loadSampleDataset() {
+async function loadDatasetUrl(url, displayName, defaultMinShip = 20) {
   const err = $('#loadErr');
-  if (err) err.innerHTML = `<p class="small">Loading sample-data.csv...</p>`;
+  if (err) err.innerHTML = `<div class="callout-box">Loading ${displayName}...</div>`;
   try {
-    const res = await fetch('sample-data.csv');
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
     const text = await res.text();
     const parsed = Papa.parse(text, {header: true, skipEmptyLines: true});
     S.headers = parsed.meta.fields || [];
     S.rows = parsed.data;
+    S.currentDatasetName = displayName;
+    S.minShip = defaultMinShip;
     S.map = autoMap(S.headers);
     S.clean = null; S.result = null;
     S.step = 2; render();
   } catch (e) {
-    if (err) err.innerHTML = `<p class="err">Could not automatically fetch sample-data.csv (likely file:// protocol). Please select sample-data.csv using the file picker above.</p>`;
+    if (err) err.innerHTML = `<div class="callout-box warn"><b>Could not fetch file:</b> Please select ${displayName} using the file upload box above.</div>`;
   }
 }
 
-function bind() {
-  const smpBtn = $('#loadSampleBtn');
-  if (smpBtn) smpBtn.onclick = loadSampleDataset;
+function cycleTheme() {
+  const order = ['mix', 'dark', 'light'];
+  const current = document.documentElement.dataset.theme || 'mix';
+  const next = order[(order.indexOf(current) + 1) % order.length];
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem('theme', next);
+  const lbl = $('#themeNameLabel');
+  if (lbl) lbl.textContent = next.charAt(0).toUpperCase() + next.slice(1);
+}
 
-  const f = $('#file');
-  if (f) f.onchange = async e => {
-    const file = e.target.files[0];
+function bind() {
+  const themeBtn = $('#themeToggleBtn');
+  if (themeBtn) themeBtn.onclick = cycleTheme;
+
+  const benchBtn = $('#loadBenchmarkBtn');
+  if (benchBtn) benchBtn.onclick = () => loadDatasetUrl('sample-data.csv', 'USAID SCMS Delivery History (10.3k rows)', 20);
+
+  const dummyBtn = $('#loadDummyBtn');
+  if (dummyBtn) dummyBtn.onclick = () => loadDatasetUrl('dummy-suppliers.csv', 'Quick Test Dummy CSV (190 rows)', 15);
+
+  const dropBox = $('#dropzoneBox');
+  const fileInput = $('#file');
+  if (dropBox && fileInput) {
+    dropBox.onclick = () => fileInput.click();
+    dropBox.ondragover = e => { e.preventDefault(); dropBox.classList.add('dragover'); };
+    dropBox.ondragleave = () => { dropBox.classList.remove('dragover'); };
+    dropBox.ondrop = e => {
+      e.preventDefault();
+      dropBox.classList.remove('dragover');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    };
+    fileInput.onchange = e => {
+      if (e.target.files.length) handleFile(e.target.files[0]);
+    };
+  }
+
+  async function handleFile(file) {
     const err = $('#loadErr');
     if (!file) return;
     if (!isCsv(file)) {
-      if (err) err.innerHTML = `<p class="err">"${esc(file.name)}" isn't a CSV file. Choose a file ending in .csv.</p>`;
-      e.target.value = '';
+      if (err) err.innerHTML = `<div class="callout-box warn">"${esc(file.name)}" is not a CSV file. Please select a valid .csv file.</div>`;
       return;
     }
     if (err) err.innerHTML = '';
@@ -1091,10 +1344,12 @@ function bind() {
     const parsed = Papa.parse(text, {header: true, skipEmptyLines: true});
     S.headers = parsed.meta.fields || [];
     S.rows = parsed.data;
+    S.currentDatasetName = file.name;
+    S.minShip = S.rows.length < 500 ? 10 : 20;
     S.map = autoMap(S.headers);
     S.clean = null; S.result = null;
     S.step = 2; render();
-  };
+  }
 
   document.querySelectorAll('select[data-role]').forEach(sel => sel.onchange = e => {
     const v = e.target.value;
@@ -1106,23 +1361,40 @@ function bind() {
 
   document.querySelectorAll('input[data-w]').forEach(inp => inp.oninput = e => {
     S.weights[inp.dataset.w] = +e.target.value;
-    e.target.nextElementSibling.textContent = e.target.value;
+    const totalW = (S.weights.cost + S.weights.reliability + S.weights.resilience) || 1;
+    const pct = Math.round((S.weights[inp.dataset.w] / totalW) * 100);
+    inp.parentElement.querySelector('.slider-val-box').innerHTML = `${e.target.value}x <span style="font-size:11px;color:var(--text-muted)">(${pct}%)</span>`;
   });
 
-  // AHP Sliders
+  // AHP inputs
   const acr = $('#ahp_c_r'); if (acr) acr.oninput = e => { S.ahp.cost_rel = +e.target.value; render(); };
   const acs = $('#ahp_c_s'); if (acs) acs.oninput = e => { S.ahp.cost_res = +e.target.value; render(); };
   const ars = $('#ahp_r_s'); if (ars) ars.oninput = e => { S.ahp.rel_res = +e.target.value; render(); };
 
-  // FinTech Inputs
+  // FinTech inputs
   const fDem = $('#finDemand'); if (fDem) fDem.onchange = e => { S.finParams.demand = +e.target.value || 50000; render(); };
   const fRate = $('#finRate'); if (fRate) fRate.onchange = e => { S.finParams.holdingRate = +e.target.value || 20; render(); };
   const fServ = $('#finService'); if (fServ) fServ.onchange = e => { S.finParams.serviceLevel = +e.target.value || 95; render(); };
 
-  // Optimizer Inputs
+  // Optimizer inputs
   const oVol = $('#optVolume'); if (oVol) oVol.onchange = e => { S.optParams.orderVolume = +e.target.value || 100000; render(); };
   const oRel = $('#optRel'); if (oRel) oRel.onchange = e => { S.optParams.minReliability = +e.target.value || 96; render(); };
   const oShare = $('#optShare'); if (oShare) oShare.onchange = e => { S.optParams.maxShare = +e.target.value || 40; render(); };
+
+  const searchInp = $('#supplierSearch');
+  if (searchInp) searchInp.oninput = e => {
+    S.searchQuery = e.target.value;
+    const container = document.querySelector('.table-responsive');
+    if (container && container.parentElement) {
+      container.parentElement.innerHTML = renderScorecardTable(S.result.scored, S.result.avail, S.result.excluded);
+      const newInp = $('#supplierSearch');
+      if (newInp) {
+        newInp.focus();
+        newInp.setSelectionRange(newInp.value.length, newInp.value.length);
+        newInp.oninput = searchInp.oninput;
+      }
+    }
+  };
 
   const mi = $('#minShip'); if (mi) mi.onchange = e => { S.minShip = Math.max(1, +e.target.value || 1); };
   const rb = $('#runBtn'); if (rb) rb.onclick = () => {
@@ -1130,5 +1402,11 @@ function bind() {
     goto(5);
   };
 }
+
+// Restore saved theme (default to mix)
+const savedTheme = localStorage.getItem('theme') || 'mix';
+document.documentElement.dataset.theme = savedTheme;
+const themeLbl = $('#themeNameLabel');
+if (themeLbl) themeLbl.textContent = savedTheme.charAt(0).toUpperCase() + savedTheme.slice(1);
 
 render();
